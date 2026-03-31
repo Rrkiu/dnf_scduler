@@ -46,6 +46,20 @@ export function formatWeekLabel(weekKey: string): string {
   return `${weekKey} (목) 주차`;
 }
 
+// 네오플 API 날짜 형식 (KST 기준): YYYYMMDDTHHmm
+export function formatNeopleDate(date: Date): string {
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const y  = kst.getUTCFullYear();
+  const mo = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d  = String(kst.getUTCDate()).padStart(2, '0');
+  const h  = String(kst.getUTCHours()).padStart(2, '0');
+  const mi = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}${mo}${d}T${h}${mi}`;
+}
+
+// 시즌 시작일 (KST)
+export const SEASON_START = '20260326T1000';
+
 export function calculateScore(relicCount: number, epicCount: number): number {
   const base = relicCount * 100 + epicCount * 10;
   const bonus = relicCount + epicCount >= 2 ? Math.floor(base * 0.5) : 0;
