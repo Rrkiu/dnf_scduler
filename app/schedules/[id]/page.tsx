@@ -34,7 +34,7 @@ export default async function ScheduleDetailPage({ params }: { params: Promise<{
       <div className="mb-6 flex justify-between items-center border-b pb-4">
         <div>
           <Link href="/schedules" className="text-sm font-medium text-blue-500 hover:text-blue-700 mb-2 inline-block">&larr; Back to Schedules</Link>
-          <h1 className="text-3xl font-bold text-gray-900">{schedule.name}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{schedule.name}</h1>
         </div>
       </div>
 

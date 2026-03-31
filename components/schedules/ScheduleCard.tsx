@@ -46,9 +46,9 @@ export default function ScheduleCard({ id, name, createdAt }: ScheduleCardProps)
   return (
     <div className="relative group">
       <Link href={`/schedules/${id}`}>
-        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer block border border-gray-100">
-          <h2 className="text-xl font-semibold mb-2 text-blue-600">{name}</h2>
-          <div className="text-sm text-gray-500">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer block border border-gray-100 dark:border-gray-700">
+          <h2 className="text-xl font-semibold mb-2 text-blue-600 dark:text-blue-400">{name}</h2>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             Created at: {formatDate(createdAt)}
           </div>
         </div>
@@ -57,7 +57,7 @@ export default function ScheduleCard({ id, name, createdAt }: ScheduleCardProps)
       <button
         onClick={handleDelete}
         disabled={isDeleting}
-        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 opacity-0 group-hover:opacity-100 transition text-sm font-bold disabled:opacity-50"
+        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full text-gray-300 dark:text-gray-600 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition text-sm font-bold disabled:opacity-50"
         aria-label="Delete schedule"
       >
         ✕

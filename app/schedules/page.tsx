@@ -17,12 +17,12 @@ export default async function SchedulesPage() {
   return (
     <div className="p-8 max-w-7xl mx-auto min-h-screen">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Schedules</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Schedules</h1>
         <CreateScheduleButton />
       </div>
 
       {!schedules || schedules.length === 0 ? (
-        <div className="bg-white p-6 rounded-lg shadow text-gray-500 text-center">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-gray-500 dark:text-gray-400 text-center">
           No schedules found. Create one to get started.
         </div>
       ) : (

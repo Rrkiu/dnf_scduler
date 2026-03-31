@@ -40,12 +40,12 @@ export default function CreateScheduleButton() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full shadow-xl">
-            <h2 className="text-xl font-bold mb-4">Create Schedule</h2>
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full shadow-xl">
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Create Schedule</h2>
             <input
               autoFocus
-              className="w-full border border-gray-300 p-2 rounded mb-4 focus:ring focus:ring-blue-200"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="e.g. 1st Venus Raid"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -55,7 +55,7 @@ export default function CreateScheduleButton() {
               <button
                 disabled={loading}
                 onClick={() => setIsOpen(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition"
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition"
               >
                 Cancel
               </button>

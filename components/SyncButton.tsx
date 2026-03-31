@@ -89,11 +89,11 @@ export default function SyncButton({ adventures }: SyncButtonProps) {
       {adventures.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-gray-600">등록된 모험단</p>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">등록된 모험단</p>
             <button
               onClick={handleSyncAll}
               disabled={syncingId !== null}
-              className="text-sm bg-gray-700 hover:bg-gray-800 text-white font-medium py-1 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-sm bg-gray-700 hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 text-white font-medium py-1 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {syncingId === '__all__' ? `갱신 중... (${syncAllProgress}/${adventures.length})` : '전체 갱신'}
             </button>
@@ -104,9 +104,9 @@ export default function SyncButton({ adventures }: SyncButtonProps) {
               return (
                 <div
                   key={adv.id}
-                  className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2"
+                  className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2"
                 >
-                  <span className="text-sm font-semibold text-gray-800">{adv.name}</span>
+                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{adv.name}</span>
                   <button
                     onClick={() => runSync(adv.name, adv.id)}
                     disabled={syncingId !== null}
@@ -123,12 +123,12 @@ export default function SyncButton({ adventures }: SyncButtonProps) {
 
       {/* 새 모험단 추가 */}
       <div>
-        <p className="text-sm font-medium text-gray-600 mb-2">새 모험단 추가</p>
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">새 모험단 추가</p>
         <div className="flex gap-2">
           <input
             type="text"
             placeholder="모험단 이름 입력"
-            className="border border-gray-300 p-2 rounded w-64 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="border border-gray-300 dark:border-gray-600 p-2 rounded w-64 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={newAdventureName}
             onChange={(e) => setNewAdventureName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleNewSync()}
@@ -145,7 +145,7 @@ export default function SyncButton({ adventures }: SyncButtonProps) {
       </div>
 
       {message && (
-        <p className={`text-sm font-medium ${message.ok ? 'text-green-600' : 'text-red-500'}`}>
+        <p className={`text-sm font-medium ${message.ok ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
           {message.text}
         </p>
       )}

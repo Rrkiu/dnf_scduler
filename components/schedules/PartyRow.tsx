@@ -37,17 +37,19 @@ export default function PartyRow({
   return (
     <div
       className={`rounded-xl p-4 shadow-sm cursor-pointer transition-colors duration-150 ${
-        selected ? 'bg-blue-100 ring-2 ring-blue-300' : 'bg-gray-100 hover:bg-gray-200'
+        selected
+          ? 'bg-blue-100 dark:bg-blue-900/30 ring-2 ring-blue-300 dark:ring-blue-600'
+          : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
       }`}
       onClick={() => setSelected((v) => !v)}
     >
       <div className="flex items-center justify-between mb-3">
-        <h3 className={`text-sm font-bold uppercase ${selected ? 'text-blue-700' : 'text-gray-500'}`}>
+        <h3 className={`text-sm font-bold uppercase ${selected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`}>
           Party {partyIndex + 1}
         </h3>
         <button
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          className="w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 transition text-sm font-bold"
+          className="w-6 h-6 flex items-center justify-center rounded-full text-gray-400 dark:text-gray-500 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 transition text-sm font-bold"
           aria-label="Remove party"
         >
           ✕

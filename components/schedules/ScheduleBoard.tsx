@@ -137,7 +137,7 @@ export default function ScheduleBoard({
 
   return (
     <div className="mt-6 flex flex-col gap-4">
-      <h2 className="text-xl font-semibold text-blue-800 border-b pb-2">Raid Party Configuration</h2>
+      <h2 className="text-xl font-semibold text-blue-800 dark:text-blue-300 border-b border-gray-200 dark:border-gray-700 pb-2">Raid Party Configuration</h2>
 
       <ColumnOwnerHeader
         columnOwners={columnOwners}
@@ -175,7 +175,7 @@ export default function ScheduleBoard({
 
       <button
         onClick={addParty}
-        className="w-full py-4 text-2xl text-gray-400 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-400 hover:text-gray-600 transition"
+        className="w-full py-4 text-2xl text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition"
         aria-label="Add party"
       >
         +

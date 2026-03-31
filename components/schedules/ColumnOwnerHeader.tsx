@@ -17,10 +17,10 @@ export default function ColumnOwnerHeader({
   isSaving,
 }: ColumnOwnerHeaderProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">모험단 배정</h3>
-        {isSaving && <span className="text-xs text-gray-400 animate-pulse">저장 중...</span>}
+        <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">모험단 배정</h3>
+        {isSaving && <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">저장 중...</span>}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {columnOwners.map((adventureId, colIndex) => {
@@ -34,7 +34,7 @@ export default function ColumnOwnerHeader({
                 Position {colIndex + 1}
               </span>
               <select
-                className="w-full border border-gray-200 rounded-md p-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-300"
+                className="w-full border border-gray-200 dark:border-gray-600 rounded-md p-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-300 dark:focus:ring-gray-500"
                 value={adventureId || ''}
                 onChange={(e) => onOwnerChange(colIndex, e.target.value || null)}
                 disabled={isSaving}
