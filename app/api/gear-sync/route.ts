@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { fetchCharacterDrops } from '@/lib/neople-timeline';
-import { getWeekKeyForDate, calculateScore, formatNeopleDate, SEASON_START } from '@/lib/gear-week';
+import { getWeekKeyForDate, calculateScore, formatNeopleDate, SEASON_START, getItemType } from '@/lib/gear-week';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -16,7 +16,6 @@ export async function POST(req: Request) {
 
     const endDate = formatNeopleDate(new Date());
 
-    // 대상 모험단 조회
     let query = supabase.from('adventures').select('id, name');
     if (adventureId) query = query.eq('id', adventureId);
     const { data: adventures, error: advError } = await query;
@@ -36,7 +35,6 @@ export async function POST(req: Request) {
       const charDebug: any[] = [];
 
       for (const char of characters ?? []) {
-        // 마지막 드랍 시각 조회 → 없으면 시즌 시작부터
         const { data: lastLog } = await supabase
           .from('gear_drop_logs')
           .select('dropped_at')
@@ -57,16 +55,13 @@ export async function POST(req: Request) {
           apiKey
         );
 
-        charDebug.push({
-          name: char.character_name,
-          serverId: char.neople_server_id,
-          startDate,
-          dropsFound: items.length,
-        });
+        charDebug.push({ name: char.character_name, startDate, dropsFound: items.length });
 
         for (const item of items) {
           const droppedAt = new Date(item.date);
           const weekKey = getWeekKeyForDate(droppedAt);
+          const itemType = getItemType(item.itemRarity, item.code, item.itemName);
+          if (!itemType) continue;
 
           dropLogs.push({
             adventure_id: adventure.id,
@@ -82,7 +77,6 @@ export async function POST(req: Request) {
         }
       }
 
-      // 드랍 로그 upsert
       if (dropLogs.length > 0) {
         const { error: upsertError } = await supabase
           .from('gear_drop_logs')
@@ -90,29 +84,35 @@ export async function POST(req: Request) {
         if (upsertError) console.error('upsert error:', upsertError.message);
       }
 
-      // 이 모험단의 모든 주차 점수 재계산
+      // 전체 로그 기반 주차별 점수 재계산
       const { data: allLogs } = await supabase
         .from('gear_drop_logs')
-        .select('item_rarity, week_key')
+        .select('item_rarity, item_name, timeline_code, week_key')
         .eq('adventure_id', adventure.id);
 
-      const weekGroups: Record<string, { relic: number; epic: number }> = {};
+      const weekGroups: Record<string, { rc: number; rk: number; r: number; e: number }> = {};
       for (const log of allLogs ?? []) {
-        if (!weekGroups[log.week_key]) weekGroups[log.week_key] = { relic: 0, epic: 0 };
-        if (log.item_rarity === '태초') weekGroups[log.week_key].relic++;
-        else if (log.item_rarity === '에픽') weekGroups[log.week_key].epic++;
+        const type = getItemType(log.item_rarity, log.timeline_code, log.item_name);
+        if (!type) continue;
+        if (!weekGroups[log.week_key]) weekGroups[log.week_key] = { rc: 0, rk: 0, r: 0, e: 0 };
+        if (type === 'relic_covenant') weekGroups[log.week_key].rc++;
+        else if (type === 'relic_crystal') weekGroups[log.week_key].rk++;
+        else if (type === 'relic') weekGroups[log.week_key].r++;
+        else if (type === 'epic') weekGroups[log.week_key].e++;
       }
 
-      for (const [wk, counts] of Object.entries(weekGroups)) {
+      for (const [wk, c] of Object.entries(weekGroups)) {
         await supabase
           .from('gear_weekly_scores')
           .upsert(
             {
               adventure_id: adventure.id,
               week_key: wk,
-              relic_count: counts.relic,
-              epic_count: counts.epic,
-              total_score: calculateScore(counts.relic, counts.epic),
+              relic_covenant_count: c.rc,
+              relic_crystal_count: c.rk,
+              relic_count: c.r,
+              epic_count: c.e,
+              total_score: calculateScore(c.rc, c.rk, c.r, c.e),
               snapshot_at: new Date().toISOString(),
             },
             { onConflict: 'adventure_id, week_key' }

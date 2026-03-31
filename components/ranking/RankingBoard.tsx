@@ -6,6 +6,8 @@ import { formatWeekLabel } from '@/lib/gear-week';
 interface WeekScore {
   adventure_id: string;
   week_key: string;
+  relic_covenant_count: number;
+  relic_crystal_count: number;
   relic_count: number;
   epic_count: number;
   total_score: number;
@@ -103,9 +105,11 @@ export default function RankingBoard({
       const score = weekScores.find(s => s.adventure_id === adv.id);
       return {
         ...adv,
-        relicCount: score?.relic_count ?? 0,
-        epicCount: score?.epic_count ?? 0,
-        totalScore: score?.total_score ?? 0,
+        relicCovenantCount: score?.relic_covenant_count ?? 0,
+        relicCrystalCount:  score?.relic_crystal_count ?? 0,
+        relicCount:         score?.relic_count ?? 0,
+        epicCount:          score?.epic_count ?? 0,
+        totalScore:         score?.total_score ?? 0,
         badges: getBadges(adv.id, currentWeekKey, recentScores),
       };
     })
@@ -145,6 +149,8 @@ export default function RankingBoard({
             <tr>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-10">#</th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">모험단</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">태초서약</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">서약결정</th>
               <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">태초</th>
               <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">에픽</th>
               <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">점수</th>
@@ -160,6 +166,16 @@ export default function RankingBoard({
               >
                 <td className="px-4 py-4 text-sm font-bold text-gray-400">{i + 1}</td>
                 <td className="px-4 py-4 text-sm font-semibold text-gray-900">{adv.name}</td>
+                <td className="px-4 py-4 text-center">
+                  <span className={`text-sm font-bold ${adv.relicCovenantCount > 0 ? 'text-orange-500' : 'text-gray-300'}`}>
+                    {adv.relicCovenantCount}
+                  </span>
+                </td>
+                <td className="px-4 py-4 text-center">
+                  <span className={`text-sm font-bold ${adv.relicCrystalCount > 0 ? 'text-amber-500' : 'text-gray-300'}`}>
+                    {adv.relicCrystalCount}
+                  </span>
+                </td>
                 <td className="px-4 py-4 text-center">
                   <span className={`text-sm font-bold ${adv.relicCount > 0 ? 'text-yellow-600' : 'text-gray-300'}`}>
                     {adv.relicCount}

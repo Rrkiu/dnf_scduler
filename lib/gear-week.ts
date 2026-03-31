@@ -60,8 +60,40 @@ export function formatNeopleDate(date: Date): string {
 // 시즌 시작일 (KST)
 export const SEASON_START = '20260326T1000';
 
-export function calculateScore(relicCount: number, epicCount: number): number {
-  const base = relicCount * 100 + epicCount * 10;
-  const bonus = relicCount + epicCount >= 2 ? Math.floor(base * 0.5) : 0;
-  return base + bonus;
+const COVENANT_CODES = [550, 551, 552];
+
+// 아이템 종류 분류
+export type ItemType = 'relic_covenant' | 'relic_crystal' | 'relic' | 'epic';
+
+export function getItemType(itemRarity: string, timelineCode: number, itemName: string): ItemType | null {
+  if (itemRarity === '태초') {
+    if (COVENANT_CODES.includes(timelineCode)) {
+      return itemName.includes('결정') ? 'relic_crystal' : 'relic_covenant';
+    }
+    return 'relic';
+  }
+  if (itemRarity === '에픽') return 'epic';
+  return null;
+}
+
+// 아이템 종류별 점수
+export const ITEM_SCORES: Record<ItemType, number> = {
+  relic_covenant: 300, // 태초 서약
+  relic_crystal:  100, // 태초 서약 결정
+  relic:           50, // 태초 아이템
+  epic:            10, // 에픽
+};
+
+export function calculateScore(
+  relicCovenantCount: number,
+  relicCrystalCount: number,
+  relicCount: number,
+  epicCount: number,
+): number {
+  return (
+    relicCovenantCount * ITEM_SCORES.relic_covenant +
+    relicCrystalCount  * ITEM_SCORES.relic_crystal  +
+    relicCount         * ITEM_SCORES.relic          +
+    epicCount          * ITEM_SCORES.epic
+  );
 }
