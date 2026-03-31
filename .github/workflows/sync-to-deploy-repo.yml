@@ -25,5 +25,5 @@ jobs:
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
         run: |
-          git remote add deploy https://x-access-token:${DEPLOY_TOKEN}@github.com/Rrkiu/dnf_scduler.git
+          git remote add deploy https://x-access-token:${DEPLOY_TOKEN}@github.com/Rrkiu/dnf_scduler_dply.git
           git push deploy HEAD:main --force
