@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { fetchDundamSearch, triggerDundamRefresh } from '@/lib/dundam-parser';
+import { toNeopleServerId } from '@/lib/neople-server-map';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,8 @@ export async function POST(req: Request) {
       fame: c.fame,
       damage: c.damage,
       buff_power: c.buffPower,
+      neople_character_id: c.key || null,
+      neople_server_id: c.server ? toNeopleServerId(c.server) : null,
       updated_at: new Date().toISOString()
     }));
 
