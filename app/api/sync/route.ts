@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { fetchDundamSearch, triggerDundamRefresh } from '@/lib/dundam-parser';
 
+export const dynamic = 'force-dynamic';
+
 // Vercel Serverless Function timeout configuration
 // Allows up to 60 seconds (Hobby max is dependent on account, but standard is 10-15s, this helps explicit config).
 export const maxDuration = 60;
