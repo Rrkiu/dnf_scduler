@@ -35,7 +35,7 @@ export default async function CharactersPage() {
       
       <div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Character Roster</h2>
-        <CharacterTable characters={characters} />
+        <CharacterTable characters={characters} adventures={adventures} />
       </div>
     </main>
   );
