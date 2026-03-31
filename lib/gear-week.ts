@@ -49,10 +49,10 @@ export function formatWeekLabel(weekKey: string): string {
 // 네오플 API 날짜 형식 (KST 기준): YYYYMMDDTHHmm
 export function formatNeopleDate(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  const y  = kst.getUTCFullYear();
+  const y = kst.getUTCFullYear();
   const mo = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d  = String(kst.getUTCDate()).padStart(2, '0');
-  const h  = String(kst.getUTCHours()).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const h = String(kst.getUTCHours()).padStart(2, '0');
   const mi = String(kst.getUTCMinutes()).padStart(2, '0');
   return `${y}${mo}${d}T${h}${mi}`;
 }
@@ -76,17 +76,17 @@ export type ItemType =
 
 export function getItemType(itemRarity: string, timelineCode: number, itemName: string): ItemType | null {
   const isCovenant = COVENANT_CODES.includes(timelineCode);
-  const isCrystal  = isCovenant && itemName.includes('결정');
-  const isCovOnly  = isCovenant && !itemName.includes('결정');
+  const isCrystal = isCovenant && itemName.includes('결정');
+  const isCovOnly = isCovenant && !itemName.includes('결정');
 
   if (itemRarity === '태초') {
-    if (isCrystal)  return 'crystal_relic';
-    if (isCovOnly)  return 'covenant_relic';
+    if (isCrystal) return 'crystal_relic';
+    if (isCovOnly) return 'covenant_relic';
     return 'item_relic';
   }
   if (itemRarity === '에픽') {
-    if (isCrystal)  return 'crystal_epic';
-    if (isCovOnly)  return 'covenant_epic';
+    if (isCrystal) return 'crystal_epic';
+    if (isCovOnly) return 'covenant_epic';
     return 'item_epic';
   }
   return null;
@@ -95,20 +95,20 @@ export function getItemType(itemRarity: string, timelineCode: number, itemName: 
 // 아이템 종류별 점수 (에픽은 종류 무관 10점)
 export const ITEM_SCORES: Record<ItemType, number> = {
   covenant_relic: 300,
-  crystal_relic:  100,
-  item_relic:      50,
-  covenant_epic:   10,
-  crystal_epic:    10,
-  item_epic:       10,
+  crystal_relic: 100,
+  item_relic: 50,
+  covenant_epic: 50,
+  crystal_epic: 30,
+  item_epic: 10,
 };
 
 export interface WeekCounts {
   covenant_relic: number;
-  covenant_epic:  number;
-  crystal_relic:  number;
-  crystal_epic:   number;
-  item_relic:     number;
-  item_epic:      number;
+  covenant_epic: number;
+  crystal_relic: number;
+  crystal_epic: number;
+  item_relic: number;
+  item_epic: number;
 }
 
 export function emptyCounts(): WeekCounts {
@@ -118,10 +118,10 @@ export function emptyCounts(): WeekCounts {
 export function calculateScore(counts: WeekCounts): number {
   return (
     counts.covenant_relic * ITEM_SCORES.covenant_relic +
-    counts.crystal_relic  * ITEM_SCORES.crystal_relic  +
-    counts.item_relic     * ITEM_SCORES.item_relic     +
-    counts.covenant_epic  * ITEM_SCORES.covenant_epic  +
-    counts.crystal_epic   * ITEM_SCORES.crystal_epic   +
-    counts.item_epic      * ITEM_SCORES.item_epic
+    counts.crystal_relic * ITEM_SCORES.crystal_relic +
+    counts.item_relic * ITEM_SCORES.item_relic +
+    counts.covenant_epic * ITEM_SCORES.covenant_epic +
+    counts.crystal_epic * ITEM_SCORES.crystal_epic +
+    counts.item_epic * ITEM_SCORES.item_epic
   );
 }
