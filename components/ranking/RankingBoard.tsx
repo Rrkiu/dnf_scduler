@@ -94,26 +94,40 @@ export default function RankingBoard({
   dropLogs,
 }: RankingBoardProps) {
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<string | null>(null);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
   const [selectedAdventureId, setSelectedAdventureId] = useState<string | null>(null);
 
   const handleSync = async () => {
     setIsSyncing(true);
     setSyncMsg(null);
+    setSyncProgress(null);
+
+    const results: string[] = [];
     try {
-      const res = await fetch('/api/gear-sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setSyncMsg(`갱신 완료 — ${data.results.map((r: any) => `${r.adventure}: ${r.totalScore}점`).join(' / ')}`);
+      for (let i = 0; i < adventures.length; i++) {
+        const adv = adventures[i];
+        setSyncProgress(`(${i + 1}/${adventures.length}) ${adv.name} 갱신 중...`);
+
+        const res = await fetch('/api/gear-sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adventureId: adv.id }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          results.push(`${adv.name}: 오류 (${data.error})`);
+        } else {
+          results.push(`${adv.name}: ${data.totalDropsFound}개`);
+        }
+      }
+      setSyncMsg(`갱신 완료 — ${results.join(' / ')}`);
       window.location.reload();
     } catch (err: any) {
       setSyncMsg(`오류: ${err.message}`);
     } finally {
       setIsSyncing(false);
+      setSyncProgress(null);
     }
   };
 
@@ -158,7 +172,8 @@ export default function RankingBoard({
           >
             {isSyncing ? '갱신 중...' : '드랍 데이터 갱신'}
           </button>
-          {syncMsg && <p className="text-xs text-gray-500">{syncMsg}</p>}
+          {syncProgress && <p className="text-xs text-blue-500">{syncProgress}</p>}
+          {!syncProgress && syncMsg && <p className="text-xs text-gray-500">{syncMsg}</p>}
         </div>
       </div>
 
