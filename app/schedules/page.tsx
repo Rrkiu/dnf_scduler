@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import CreateScheduleButton from '@/components/schedules/CreateScheduleButton';
-import Link from 'next/link';
+import ScheduleCard from '@/components/schedules/ScheduleCard';
 
 export const revalidate = 0;
 
@@ -28,14 +28,12 @@ export default async function SchedulesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {schedules.map((sched: any) => (
-            <Link key={sched.id} href={`/schedules/${sched.id}`}>
-              <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer block border border-gray-100">
-                <h2 className="text-xl font-semibold mb-2 text-blue-600">{sched.name}</h2>
-                <div className="text-sm text-gray-500">
-                  Created at: {new Date(sched.created_at).toLocaleString()}
-                </div>
-              </div>
-            </Link>
+            <ScheduleCard
+              key={sched.id}
+              id={sched.id}
+              name={sched.name}
+              createdAt={sched.created_at}
+            />
           ))}
         </div>
       )}

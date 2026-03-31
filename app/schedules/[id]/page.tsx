@@ -7,10 +7,11 @@ export const revalidate = 0;
 export default async function ScheduleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: scheduleId } = await params;
 
-  const [scheduleRes, slotsRes, charactersRes] = await Promise.all([
+  const [scheduleRes, slotsRes, charactersRes, adventuresRes] = await Promise.all([
     supabase.from('schedules').select('*').eq('id', scheduleId).single(),
     supabase.from('schedule_slots').select('*, characters(*)').eq('schedule_id', scheduleId).order('position', { ascending: true }),
-    supabase.from('characters').select('*').order('fame', { ascending: false })
+    supabase.from('characters').select('*').order('fame', { ascending: false }),
+    supabase.from('adventures').select('*').order('name', { ascending: true }),
   ]);
 
   if (scheduleRes.error) {
@@ -20,6 +21,13 @@ export default async function ScheduleDetailPage({ params }: { params: Promise<{
   const schedule = scheduleRes.data;
   const initialSlots = slotsRes.data || [];
   const allCharacters = charactersRes.data || [];
+  const allAdventures = adventuresRes.data || [];
+
+  const rawOwners = schedule.column_owners;
+  const initialColumnOwners: (string | null)[] =
+    Array.isArray(rawOwners) && rawOwners.length === 4
+      ? rawOwners
+      : [null, null, null, null];
 
   return (
     <div className="p-8 max-w-7xl mx-auto min-h-screen">
@@ -30,10 +38,12 @@ export default async function ScheduleDetailPage({ params }: { params: Promise<{
         </div>
       </div>
 
-      <ScheduleBoard 
+      <ScheduleBoard
         scheduleId={schedule.id}
-        initialSlots={initialSlots} 
-        allCharacters={allCharacters} 
+        initialSlots={initialSlots}
+        initialColumnOwners={initialColumnOwners}
+        allCharacters={allCharacters}
+        allAdventures={allAdventures}
       />
     </div>
   );

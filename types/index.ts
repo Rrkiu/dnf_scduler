@@ -21,6 +21,7 @@ export type Schedule = {
   id: string;
   name: string;
   created_at: string;
+  column_owners?: (string | null)[] | null;
 };
 
 export type ScheduleSlot = {

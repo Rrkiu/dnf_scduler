@@ -30,7 +30,8 @@ CREATE TABLE characters (
 CREATE TABLE schedules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  column_owners JSONB DEFAULT '[]'::jsonb
 );
 
 -- Create ScheduleSlots table

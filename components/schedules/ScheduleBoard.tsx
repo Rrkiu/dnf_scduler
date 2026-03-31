@@ -1,124 +1,185 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Character, ScheduleSlot } from '@/types';
+import { Character, Adventure } from '@/types';
+import PartyRow from './PartyRow';
+import ColumnOwnerHeader from './ColumnOwnerHeader';
+
+interface SlotData {
+  position: number;
+  character_id?: string | null;
+  characters?: Character | null;
+}
 
 interface ScheduleBoardProps {
   scheduleId: string;
-  initialSlots: any[];
+  initialSlots: SlotData[];
+  initialColumnOwners: (string | null)[];
   allCharacters: Character[];
+  allAdventures: Adventure[];
 }
 
-export default function ScheduleBoard({ scheduleId, initialSlots, allCharacters }: ScheduleBoardProps) {
-  const [slots, setSlots] = useState<any[]>(initialSlots);
-  const [loadingParam, setLoadingParam] = useState<number | null>(null);
+const PARTY_SIZE = 4;
 
-  // We map position 0 to 11 (assume max 12 slots for DNF Raids like Bakal or Ozma)
-  const MAX_POSITIONS = 12;
+function getInitialPartyBases(slots: SlotData[]): number[] {
+  if (slots.length === 0) return [0];
+  const maxPos = Math.max(...slots.map((s) => s.position));
+  const count = Math.floor(maxPos / PARTY_SIZE) + 1;
+  return Array.from({ length: count }, (_, i) => i * PARTY_SIZE);
+}
 
-  const handleAssign = async (position: number, characterId: string | null) => {
-    setLoadingParam(position);
-    
-    // Find char details to save role safely, or set null
-    const selectedChar = allCharacters.find(c => c.id === characterId);
-    
-    try {
-      if (!characterId) {
-        // Unassign slot -> delete it safely via Supabase
+export default function ScheduleBoard({
+  scheduleId,
+  initialSlots,
+  initialColumnOwners,
+  allCharacters,
+  allAdventures,
+}: ScheduleBoardProps) {
+  const [partyBases, setPartyBases] = useState<number[]>(() => getInitialPartyBases(initialSlots));
+  const [nextBase, setNextBase] = useState<number>(() => getInitialPartyBases(initialSlots).length * PARTY_SIZE);
+  const [slots, setSlots] = useState<SlotData[]>(initialSlots);
+  const [columnOwners, setColumnOwners] = useState<(string | null)[]>(initialColumnOwners);
+  const [loadingPosition, setLoadingPosition] = useState<number | null>(null);
+  const [isSavingOwners, setIsSavingOwners] = useState(false);
+
+  const handleAssign = useCallback(
+    async (position: number, characterId: string | null) => {
+      setLoadingPosition(position);
+      const selectedChar = allCharacters.find((c) => c.id === characterId);
+
+      try {
+        if (!characterId) {
+          await supabase
+            .from('schedule_slots')
+            .delete()
+            .match({ schedule_id: scheduleId, position });
+
+          setSlots((prev) => prev.filter((s) => s.position !== position));
+        } else {
+          const payload = {
+            schedule_id: scheduleId,
+            position,
+            character_id: selectedChar?.id || null,
+            role: selectedChar?.role || null,
+          };
+
+          const { data, error } = await supabase
+            .from('schedule_slots')
+            .upsert(payload, { onConflict: 'schedule_id, position' })
+            .select('*, characters(*)')
+            .single();
+
+          if (error) throw new Error(error.message);
+
+          setSlots((prev) => [...prev.filter((s) => s.position !== position), data]);
+        }
+      } catch (err: any) {
+        alert(`Error updating slot: ${err.message}`);
+      } finally {
+        setLoadingPosition(null);
+      }
+    },
+    [scheduleId, allCharacters]
+  );
+
+  const handleColumnOwnerChange = useCallback(
+    async (colIndex: number, adventureId: string | null) => {
+      const next = columnOwners.map((v, i) => (i === colIndex ? adventureId : v));
+      setColumnOwners(next);
+      setIsSavingOwners(true);
+
+      try {
+        const { error } = await supabase
+          .from('schedules')
+          .update({ column_owners: next })
+          .eq('id', scheduleId);
+
+        if (error) throw new Error(error.message);
+      } catch (err: any) {
+        alert(`Error saving column assignment: ${err.message}`);
+        setColumnOwners(columnOwners);
+      } finally {
+        setIsSavingOwners(false);
+      }
+    },
+    [scheduleId, columnOwners]
+  );
+
+  const addParty = () => {
+    setPartyBases((prev) => [...prev, nextBase]);
+    setNextBase((prev) => prev + PARTY_SIZE);
+  };
+
+  const removeParty = useCallback(
+    async (base: number) => {
+      const positions = Array.from({ length: PARTY_SIZE }, (_, i) => base + i);
+
+      try {
         await supabase
           .from('schedule_slots')
           .delete()
-          .match({ schedule_id: scheduleId, position });
-        
-        setSlots(slots.filter(s => s.position !== position));
-      } else {
-        // Upsert slot
-        const payload = {
-          schedule_id: scheduleId,
-          position,
-          character_id: selectedChar?.id || null,
-          role: selectedChar?.role || null,
-        };
+          .eq('schedule_id', scheduleId)
+          .in('position', positions);
 
-        const { data, error } = await supabase
-          .from('schedule_slots')
-          .upsert(payload, { onConflict: 'schedule_id, position' })
-          .select('*, characters(*)')
-          .single();
-
-        if (error) throw new Error(error.message);
-
-        setSlots(prev => {
-          const newSlots = [...prev];
-          const idx = newSlots.findIndex(s => s.position === position);
-          if (idx >= 0) newSlots[idx] = data;
-          else newSlots.push(data);
-          return newSlots;
-        });
+        setSlots((prev) => prev.filter((s) => !positions.includes(s.position)));
+        setPartyBases((prev) => prev.filter((b) => b !== base));
+      } catch (err: any) {
+        alert(`Error removing party: ${err.message}`);
       }
-    } catch (err: any) {
-      alert(`Error updating slot: ${err.message}`);
-    } finally {
-      setLoadingParam(null);
-    }
-  };
+    },
+    [scheduleId]
+  );
 
-  // Pre-generate grid mapping positions
-  const gridPositions = Array.from({ length: MAX_POSITIONS }, (_, i) => i);
+  const assignedCharacterIds = new Set(
+    slots.map((s) => s.character_id).filter(Boolean) as string[]
+  );
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow mt-6">
-      <h2 className="text-xl font-semibold mb-4 text-blue-800 border-b pb-2">Raid Party Configuration</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {gridPositions.map(pos => {
-          const slotData = slots.find(s => s.position === pos);
-          const isSlotLoading = loadingParam === pos;
-          const assignedCharId = slotData?.character_id || '';
+    <div className="mt-6 flex flex-col gap-4">
+      <h2 className="text-xl font-semibold text-blue-800 border-b pb-2">Raid Party Configuration</h2>
 
+      <ColumnOwnerHeader
+        columnOwners={columnOwners}
+        allAdventures={allAdventures}
+        onOwnerChange={handleColumnOwnerChange}
+        isSaving={isSavingOwners}
+      />
+
+      {partyBases.map((base, partyIndex) => {
+        const partySlots: SlotData[] = Array.from({ length: PARTY_SIZE }, (_, i) => {
+          const pos = base + i;
           return (
-            <div key={pos} className="border border-gray-200 rounded p-4 flex flex-col items-center bg-gray-50 hover:shadow transition">
-              <span className="text-xs font-bold text-gray-500 uppercase mb-2 bg-gray-200 px-2 py-1 rounded">Position {pos + 1}</span>
-              
-              {isSlotLoading ? (
-                <div className="text-sm text-gray-500 py-2">Updating...</div>
-              ) : (
-                <select
-                  className={`w-full border rounded p-2 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white ${!assignedCharId ? 'text-gray-400' : 'text-gray-900 font-medium'}`}
-                  value={assignedCharId}
-                  onChange={(e) => handleAssign(pos, e.target.value === '' ? null : e.target.value)}
-                >
-                  <option value="">-- Empty --</option>
-                  {allCharacters.map(char => (
-                    <option key={char.id} value={char.id}>
-                      [{char.role === 'buffer' ? 'B' : 'D'}] {char.character_name} 
-                      ({char.fame.toLocaleString()})
-                    </option>
-                  ))}
-                </select>
-              )}
-              
-              {/* Context display for slot */}
-              <div className="mt-3 text-xs w-full text-center min-h-[40px]">
-                {slotData?.characters ? (
-                  <div className="flex flex-col gap-1 items-center justify-center">
-                    <span className="font-semibold text-blue-700">{slotData.characters.job}</span>
-                    <span className="text-gray-500">
-                      {slotData.characters.role === 'dealer'
-                        ? `Dmg: ${slotData.characters.damage?.toFixed(1) || '-'}`
-                        : `B.Pow: ${(slotData.characters.buff_power || 0).toLocaleString()}`
-                      }
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-gray-400 italic">No character</span>
-                )}
-              </div>
-            </div>
+            slots.find((s) => s.position === pos) ?? {
+              position: pos,
+              character_id: null,
+              characters: null,
+            }
           );
-        })}
-      </div>
+        });
+
+        return (
+          <PartyRow
+            key={base}
+            partyIndex={partyIndex}
+            slots={partySlots}
+            columnOwners={columnOwners}
+            allCharacters={allCharacters}
+            assignedCharacterIds={assignedCharacterIds}
+            onAssign={handleAssign}
+            onRemove={() => removeParty(base)}
+            loadingPosition={loadingPosition}
+          />
+        );
+      })}
+
+      <button
+        onClick={addParty}
+        className="w-full py-4 text-2xl text-gray-400 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-400 hover:text-gray-600 transition"
+        aria-label="Add party"
+      >
+        +
+      </button>
     </div>
   );
 }

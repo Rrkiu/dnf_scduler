@@ -7,16 +7,17 @@ import { Character } from '@/types';
 export const revalidate = 0;
 
 export default async function CharactersPage() {
-  const { data, error } = await supabase
-    .from('characters')
-    .select('*')
-    .order('fame', { ascending: false });
+  const [{ data, error }, { data: adventureData }] = await Promise.all([
+    supabase.from('characters').select('*').order('fame', { ascending: false }),
+    supabase.from('adventures').select('*').order('name', { ascending: true }),
+  ]);
 
   if (error) {
     console.error('Error fetching characters:', error);
   }
 
   const characters: Character[] = data || [];
+  const adventures = adventureData || [];
 
   return (
     <main className="p-8 max-w-7xl mx-auto min-h-screen">
@@ -29,7 +30,7 @@ export default async function CharactersPage() {
         <p className="text-gray-500 text-sm mb-4 dark:text-gray-400">
           Enter your adventure name (모험단) to fetch and save your character roster from Dundam.
         </p>
-        <SyncButton />
+        <SyncButton adventures={adventures} />
       </div>
       
       <div>
