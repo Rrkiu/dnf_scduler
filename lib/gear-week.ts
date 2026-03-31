@@ -62,38 +62,66 @@ export const SEASON_START = '20260326T1000';
 
 const COVENANT_CODES = [550, 551, 552];
 
-// 아이템 종류 분류
-export type ItemType = 'relic_covenant' | 'relic_crystal' | 'relic' | 'epic';
+// 6가지 아이템 분류
+// 서약: covenant_relic / covenant_epic
+// 서약 결정: crystal_relic / crystal_epic
+// 장비: item_relic / item_epic
+export type ItemType =
+  | 'covenant_relic'
+  | 'covenant_epic'
+  | 'crystal_relic'
+  | 'crystal_epic'
+  | 'item_relic'
+  | 'item_epic';
 
 export function getItemType(itemRarity: string, timelineCode: number, itemName: string): ItemType | null {
+  const isCovenant = COVENANT_CODES.includes(timelineCode);
+  const isCrystal  = isCovenant && itemName.includes('결정');
+  const isCovOnly  = isCovenant && !itemName.includes('결정');
+
   if (itemRarity === '태초') {
-    if (COVENANT_CODES.includes(timelineCode)) {
-      return itemName.includes('결정') ? 'relic_crystal' : 'relic_covenant';
-    }
-    return 'relic';
+    if (isCrystal)  return 'crystal_relic';
+    if (isCovOnly)  return 'covenant_relic';
+    return 'item_relic';
   }
-  if (itemRarity === '에픽') return 'epic';
+  if (itemRarity === '에픽') {
+    if (isCrystal)  return 'crystal_epic';
+    if (isCovOnly)  return 'covenant_epic';
+    return 'item_epic';
+  }
   return null;
 }
 
-// 아이템 종류별 점수
+// 아이템 종류별 점수 (에픽은 종류 무관 10점)
 export const ITEM_SCORES: Record<ItemType, number> = {
-  relic_covenant: 300, // 태초 서약
-  relic_crystal:  100, // 태초 서약 결정
-  relic:           50, // 태초 아이템
-  epic:            10, // 에픽
+  covenant_relic: 300,
+  crystal_relic:  100,
+  item_relic:      50,
+  covenant_epic:   10,
+  crystal_epic:    10,
+  item_epic:       10,
 };
 
-export function calculateScore(
-  relicCovenantCount: number,
-  relicCrystalCount: number,
-  relicCount: number,
-  epicCount: number,
-): number {
+export interface WeekCounts {
+  covenant_relic: number;
+  covenant_epic:  number;
+  crystal_relic:  number;
+  crystal_epic:   number;
+  item_relic:     number;
+  item_epic:      number;
+}
+
+export function emptyCounts(): WeekCounts {
+  return { covenant_relic: 0, covenant_epic: 0, crystal_relic: 0, crystal_epic: 0, item_relic: 0, item_epic: 0 };
+}
+
+export function calculateScore(counts: WeekCounts): number {
   return (
-    relicCovenantCount * ITEM_SCORES.relic_covenant +
-    relicCrystalCount  * ITEM_SCORES.relic_crystal  +
-    relicCount         * ITEM_SCORES.relic          +
-    epicCount          * ITEM_SCORES.epic
+    counts.covenant_relic * ITEM_SCORES.covenant_relic +
+    counts.crystal_relic  * ITEM_SCORES.crystal_relic  +
+    counts.item_relic     * ITEM_SCORES.item_relic     +
+    counts.covenant_epic  * ITEM_SCORES.covenant_epic  +
+    counts.crystal_epic   * ITEM_SCORES.crystal_epic   +
+    counts.item_epic      * ITEM_SCORES.item_epic
   );
 }

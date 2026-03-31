@@ -6,10 +6,12 @@ import { formatWeekLabel } from '@/lib/gear-week';
 interface WeekScore {
   adventure_id: string;
   week_key: string;
-  relic_covenant_count: number;
-  relic_crystal_count: number;
-  relic_count: number;
-  epic_count: number;
+  covenant_relic_count: number;
+  covenant_epic_count: number;
+  crystal_relic_count: number;
+  crystal_epic_count: number;
+  item_relic_count: number;
+  item_epic_count: number;
   total_score: number;
 }
 
@@ -19,8 +21,21 @@ interface DropLog {
   character_id: string;
   item_name: string;
   item_rarity: string;
+  timeline_code: number;
   dropped_at: string;
   characters: { character_name: string } | null;
+}
+
+const COVENANT_CODES = [550, 551, 552];
+
+function getItemCategory(timelineCode: number, itemName: string): { label: string; className: string } {
+  if (COVENANT_CODES.includes(timelineCode)) {
+    if (itemName.includes('결정')) {
+      return { label: '서약결정', className: 'bg-amber-100 text-amber-700' };
+    }
+    return { label: '서약', className: 'bg-cyan-100 text-cyan-700 ring-1 ring-cyan-300' };
+  }
+  return { label: '장비', className: 'bg-gray-100 text-gray-600' };
 }
 
 interface Adventure {
@@ -52,8 +67,11 @@ function getBadges(adventureId: string, currentWeekKey: string, allScores: WeekS
     return badges;
   }
 
-  if (current.relic_count >= 2) badges.push('🎰 대박');
-  if (current.relic_count >= 1 && current.epic_count >= 3) badges.push('⚡ 행운아');
+  const totalRelics = (current.covenant_relic_count ?? 0) + (current.crystal_relic_count ?? 0) + (current.item_relic_count ?? 0);
+  const totalEpics  = (current.covenant_epic_count ?? 0) + (current.crystal_epic_count ?? 0) + (current.item_epic_count ?? 0);
+
+  if (totalRelics >= 2) badges.push('🎰 대박');
+  if (totalRelics >= 1 && totalEpics >= 3) badges.push('⚡ 행운아');
 
   const recent3 = advScores.filter(s => s.week_key <= currentWeekKey).slice(0, 3);
   if (recent3.length === 3 && recent3.every(s => s.total_score > 0)) {
@@ -105,10 +123,12 @@ export default function RankingBoard({
       const score = weekScores.find(s => s.adventure_id === adv.id);
       return {
         ...adv,
-        relicCovenantCount: score?.relic_covenant_count ?? 0,
-        relicCrystalCount:  score?.relic_crystal_count ?? 0,
-        relicCount:         score?.relic_count ?? 0,
-        epicCount:          score?.epic_count ?? 0,
+        covenantRelicCount: score?.covenant_relic_count ?? 0,
+        covenantEpicCount:  score?.covenant_epic_count ?? 0,
+        crystalRelicCount:  score?.crystal_relic_count ?? 0,
+        crystalEpicCount:   score?.crystal_epic_count ?? 0,
+        itemRelicCount:     score?.item_relic_count ?? 0,
+        itemEpicCount:      score?.item_epic_count ?? 0,
         totalScore:         score?.total_score ?? 0,
         badges: getBadges(adv.id, currentWeekKey, recentScores),
       };
@@ -149,43 +169,91 @@ export default function RankingBoard({
             <tr>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-10">#</th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">모험단</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">태초서약</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">서약결정</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">태초</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">에픽</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-cyan-500 uppercase">서약<br/>태초</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-cyan-400 uppercase">결정<br/>태초</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-orange-500 uppercase">서약<br/>에픽</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-orange-400 uppercase">결정<br/>에픽</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-cyan-300 uppercase">장비<br/>태초</th>
+              <th className="px-4 py-3 text-center text-xs font-bold text-orange-300 uppercase">장비<br/>에픽</th>
               <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">점수</th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">칭호</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {ranked.map((adv, i) => (
+            {ranked.map((adv, i) => {
+              const hasCovRelic = adv.covenantRelicCount > 0;
+              const rowBg = selectedAdventureId === adv.id
+                ? 'bg-blue-50'
+                : hasCovRelic
+                  ? 'bg-cyan-50 hover:bg-cyan-100'
+                  : 'hover:bg-gray-50';
+              return (
               <tr
                 key={adv.id}
-                className={`cursor-pointer transition-colors ${selectedAdventureId === adv.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                className={`cursor-pointer transition-colors ${rowBg}`}
                 onClick={() => setSelectedAdventureId(selectedAdventureId === adv.id ? null : adv.id)}
               >
                 <td className="px-4 py-4 text-sm font-bold text-gray-400">{i + 1}</td>
                 <td className="px-4 py-4 text-sm font-semibold text-gray-900">{adv.name}</td>
+
+                {/* 서약 태초 — 채운 배지 + 글로우 */}
                 <td className="px-4 py-4 text-center">
-                  <span className={`text-sm font-bold ${adv.relicCovenantCount > 0 ? 'text-orange-500' : 'text-gray-300'}`}>
-                    {adv.relicCovenantCount}
+                  {adv.covenantRelicCount > 0 ? (
+                    <span className="inline-block px-2 py-0.5 rounded-full text-sm font-black bg-cyan-500 text-white ring-2 ring-cyan-300 shadow-sm shadow-cyan-300">
+                      {adv.covenantRelicCount}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-200">—</span>
+                  )}
+                </td>
+
+                {/* 결정 태초 — pill 배지 */}
+                <td className="px-4 py-4 text-center">
+                  {adv.crystalRelicCount > 0 ? (
+                    <span className="inline-block px-2 py-0.5 rounded-full text-sm font-bold bg-cyan-100 text-cyan-700">
+                      {adv.crystalRelicCount}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-200">—</span>
+                  )}
+                </td>
+
+                {/* 서약 에픽 — 채운 배지 + 테두리 */}
+                <td className="px-4 py-4 text-center">
+                  {adv.covenantEpicCount > 0 ? (
+                    <span className="inline-block px-2 py-0.5 rounded-full text-sm font-black bg-orange-500 text-white ring-1 ring-orange-300">
+                      {adv.covenantEpicCount}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-200">—</span>
+                  )}
+                </td>
+
+                {/* 결정 에픽 — pill 배지 */}
+                <td className="px-4 py-4 text-center">
+                  {adv.crystalEpicCount > 0 ? (
+                    <span className="inline-block px-2 py-0.5 rounded-full text-sm font-bold bg-orange-100 text-orange-700">
+                      {adv.crystalEpicCount}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-200">—</span>
+                  )}
+                </td>
+
+                {/* 장비 태초 — 텍스트만 */}
+                <td className="px-4 py-4 text-center">
+                  <span className={`text-sm font-bold ${adv.itemRelicCount > 0 ? 'text-cyan-500' : 'text-gray-200'}`}>
+                    {adv.itemRelicCount > 0 ? adv.itemRelicCount : '—'}
                   </span>
                 </td>
+
+                {/* 장비 에픽 — 텍스트만 */}
                 <td className="px-4 py-4 text-center">
-                  <span className={`text-sm font-bold ${adv.relicCrystalCount > 0 ? 'text-amber-500' : 'text-gray-300'}`}>
-                    {adv.relicCrystalCount}
+                  <span className={`text-sm font-bold ${adv.itemEpicCount > 0 ? 'text-orange-500' : 'text-gray-200'}`}>
+                    {adv.itemEpicCount > 0 ? adv.itemEpicCount : '—'}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-center">
-                  <span className={`text-sm font-bold ${adv.relicCount > 0 ? 'text-yellow-600' : 'text-gray-300'}`}>
-                    {adv.relicCount}
-                  </span>
-                </td>
-                <td className="px-4 py-4 text-center">
-                  <span className={`text-sm font-bold ${adv.epicCount > 0 ? 'text-purple-600' : 'text-gray-300'}`}>
-                    {adv.epicCount}
-                  </span>
-                </td>
+
                 <td className="px-4 py-4 text-center">
                   <span className={`text-sm font-bold ${adv.totalScore > 0 ? 'text-blue-700' : 'text-gray-300'}`}>
                     {adv.totalScore.toLocaleString()}
@@ -193,10 +261,11 @@ export default function RankingBoard({
                 </td>
                 <td className="px-4 py-4 text-sm">{adv.badges.join(' ')}</td>
               </tr>
-            ))}
+              );
+            })}
             {ranked.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-400 text-sm">
+                <td colSpan={9} className="px-4 py-8 text-center text-gray-400 text-sm">
                   이번 주 데이터가 없습니다. 갱신 버튼을 눌러주세요.
                 </td>
               </tr>
@@ -222,6 +291,7 @@ export default function RankingBoard({
                   <th className="px-4 py-2 text-left text-xs font-bold text-gray-500">캐릭터</th>
                   <th className="px-4 py-2 text-left text-xs font-bold text-gray-500">아이템</th>
                   <th className="px-4 py-2 text-left text-xs font-bold text-gray-500">등급</th>
+                  <th className="px-4 py-2 text-left text-xs font-bold text-gray-500">항목</th>
                   <th className="px-4 py-2 text-left text-xs font-bold text-gray-500">획득 시각</th>
                 </tr>
               </thead>
@@ -235,11 +305,21 @@ export default function RankingBoard({
                       <td className="px-4 py-2 text-sm">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                           log.item_rarity === '태초'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-purple-100 text-purple-700'
+                            ? 'bg-cyan-100 text-cyan-700'
+                            : 'bg-orange-100 text-orange-700'
                         }`}>
                           {log.item_rarity}
                         </span>
+                      </td>
+                      <td className="px-4 py-2 text-sm">
+                        {(() => {
+                          const cat = getItemCategory(log.timeline_code, log.item_name);
+                          return (
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${cat.className}`}>
+                              {cat.label}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-2 text-xs text-gray-400">{log.dropped_at.slice(0, 16).replace('T', ' ')}</td>
                     </tr>
@@ -273,7 +353,7 @@ export default function RankingBoard({
                     {weekKeys.map(wk => {
                       const s = recentScores.find(sc => sc.adventure_id === adv.id && sc.week_key === wk);
                       const score = s?.total_score ?? 0;
-                      const relics = s?.relic_count ?? 0;
+                      const relics = (s?.covenant_relic_count ?? 0) + (s?.crystal_relic_count ?? 0) + (s?.item_relic_count ?? 0);
                       return (
                         <td key={wk} className="px-2 py-2 text-center">
                           {score > 0 ? (

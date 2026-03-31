@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { fetchCharacterDrops } from '@/lib/neople-timeline';
-import { getWeekKeyForDate, calculateScore, formatNeopleDate, SEASON_START, getItemType } from '@/lib/gear-week';
+import {
+  getWeekKeyForDate, calculateScore, formatNeopleDate,
+  SEASON_START, getItemType, emptyCounts, WeekCounts,
+} from '@/lib/gear-week';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -9,7 +12,7 @@ export const maxDuration = 60;
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { adventureId } = body;
+    const { adventureId, force } = body;
 
     const apiKey = process.env.NEOPLE_API_KEY;
     if (!apiKey) return NextResponse.json({ error: 'NEOPLE_API_KEY 미설정' }, { status: 500 });
@@ -43,7 +46,7 @@ export async function POST(req: Request) {
           .limit(1)
           .maybeSingle();
 
-        const startDate = lastLog?.dropped_at
+        const startDate = (!force && lastLog?.dropped_at)
           ? formatNeopleDate(new Date(lastLog.dropped_at))
           : SEASON_START;
 
@@ -59,7 +62,6 @@ export async function POST(req: Request) {
 
         for (const item of items) {
           const droppedAt = new Date(item.date);
-          const weekKey = getWeekKeyForDate(droppedAt);
           const itemType = getItemType(item.itemRarity, item.code, item.itemName);
           if (!itemType) continue;
 
@@ -72,7 +74,7 @@ export async function POST(req: Request) {
             item_rarity: item.itemRarity,
             timeline_code: item.code,
             dropped_at: droppedAt.toISOString(),
-            week_key: weekKey,
+            week_key: getWeekKeyForDate(droppedAt),
           });
         }
       }
@@ -90,15 +92,12 @@ export async function POST(req: Request) {
         .select('item_rarity, item_name, timeline_code, week_key')
         .eq('adventure_id', adventure.id);
 
-      const weekGroups: Record<string, { rc: number; rk: number; r: number; e: number }> = {};
+      const weekGroups: Record<string, WeekCounts> = {};
       for (const log of allLogs ?? []) {
         const type = getItemType(log.item_rarity, log.timeline_code, log.item_name);
         if (!type) continue;
-        if (!weekGroups[log.week_key]) weekGroups[log.week_key] = { rc: 0, rk: 0, r: 0, e: 0 };
-        if (type === 'relic_covenant') weekGroups[log.week_key].rc++;
-        else if (type === 'relic_crystal') weekGroups[log.week_key].rk++;
-        else if (type === 'relic') weekGroups[log.week_key].r++;
-        else if (type === 'epic') weekGroups[log.week_key].e++;
+        if (!weekGroups[log.week_key]) weekGroups[log.week_key] = emptyCounts();
+        weekGroups[log.week_key][type]++;
       }
 
       for (const [wk, c] of Object.entries(weekGroups)) {
@@ -108,11 +107,13 @@ export async function POST(req: Request) {
             {
               adventure_id: adventure.id,
               week_key: wk,
-              relic_covenant_count: c.rc,
-              relic_crystal_count: c.rk,
-              relic_count: c.r,
-              epic_count: c.e,
-              total_score: calculateScore(c.rc, c.rk, c.r, c.e),
+              covenant_relic_count: c.covenant_relic,
+              covenant_epic_count:  c.covenant_epic,
+              crystal_relic_count:  c.crystal_relic,
+              crystal_epic_count:   c.crystal_epic,
+              item_relic_count:     c.item_relic,
+              item_epic_count:      c.item_epic,
+              total_score: calculateScore(c),
               snapshot_at: new Date().toISOString(),
             },
             { onConflict: 'adventure_id, week_key' }

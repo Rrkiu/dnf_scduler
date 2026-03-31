@@ -11,23 +11,23 @@ export default async function RankingPage() {
     supabase.from('adventures').select('id, name').order('name'),
     supabase
       .from('gear_weekly_scores')
-      .select('adventure_id, week_key, relic_count, epic_count, total_score')
+      .select('adventure_id, week_key, covenant_relic_count, covenant_epic_count, crystal_relic_count, crystal_epic_count, item_relic_count, item_epic_count, total_score')
       .eq('week_key', currentWeekKey),
     supabase
       .from('gear_weekly_scores')
-      .select('adventure_id, week_key, relic_count, epic_count, total_score')
+      .select('adventure_id, week_key, covenant_relic_count, covenant_epic_count, crystal_relic_count, crystal_epic_count, item_relic_count, item_epic_count, total_score')
       .order('week_key', { ascending: false })
       .limit(8 * 10),
     supabase
       .from('gear_drop_logs')
-      .select('id, adventure_id, character_id, item_name, item_rarity, dropped_at, characters(character_name)')
+      .select('id, adventure_id, character_id, item_name, item_rarity, timeline_code, dropped_at, characters(character_name)')
       .eq('week_key', currentWeekKey)
       .order('dropped_at', { ascending: false }),
   ]);
 
   const adventures = adventuresRes.data ?? [];
-  const weekScores = currentScoresRes.data ?? [];
-  const recentScores = recentScoresRes.data ?? [];
+  const weekScores = (currentScoresRes.data ?? []) as any[];
+  const recentScores = (recentScoresRes.data ?? []) as any[];
   const dropLogs = (dropLogsRes.data ?? []) as any[];
 
   return (
