@@ -13,17 +13,29 @@ jobs:
       - name: Checkout source repo
         uses: actions/checkout@v4
         with:
+          path: source
           fetch-depth: 0
-          persist-credentials: false
 
-      - name: Configure git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Checkout deploy repo
+        uses: actions/checkout@v4
+        with:
+          repository: Rrkiu/dnf_scduler_dply
+          token: ${{ secrets.DEPLOY_REPO_TOKEN }}
+          path: deploy
+          fetch-depth: 0
 
-      - name: Push to deploy repo
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
+      - name: Sync files except workflow
         run: |
-          git remote add deploy https://x-access-token:${DEPLOY_TOKEN}@github.com/Rrkiu/dnf_scduler_dply.git
-          git push deploy HEAD:main --force
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='.github/workflows' \
+            source/ deploy/
+
+      - name: Commit and push
+        run: |
+          cd deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet || git commit -m "Sync from source repo"
+          git push origin HEAD:main
