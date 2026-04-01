@@ -314,8 +314,13 @@ export default function RankingBoard({
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {selectedDrops
                   .sort((a, b) => new Date(b.dropped_at).getTime() - new Date(a.dropped_at).getTime())
-                  .map(log => (
-                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  .map(log => {
+                    const isCovenantRelic =
+                      log.item_rarity === '태초' &&
+                      COVENANT_CODES.includes(log.timeline_code) &&
+                      !log.item_name.includes('결정');
+                    return (
+                    <tr key={log.id} className={isCovenantRelic ? 'animate-glow-covenant' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}>
                       <td className="px-2 py-2 md:px-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{log.characters?.character_name ?? '-'}</td>
                       <td className="px-2 py-2 md:px-4 text-sm text-gray-900 dark:text-gray-100 font-medium whitespace-nowrap">{log.item_name}</td>
                       <td className="px-2 py-2 md:px-4 text-sm whitespace-nowrap">
@@ -339,7 +344,8 @@ export default function RankingBoard({
                       </td>
                       <td className="px-2 py-2 md:px-4 text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{log.dropped_at.slice(0, 16).replace('T', ' ')}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
               </tbody>
             </table>
             </div>
