@@ -25,6 +25,12 @@ export default function ColumnOwnerHeader({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {columnOwners.map((adventureId, colIndex) => {
           const color = COLUMN_COLORS[colIndex];
+          const otherSelected = new Set(
+            columnOwners.filter((id, i) => i !== colIndex && id !== null) as string[]
+          );
+          const availableAdventures = allAdventures.filter(
+            (adv) => !otherSelected.has(adv.id)
+          );
           return (
             <div
               key={colIndex}
@@ -40,7 +46,7 @@ export default function ColumnOwnerHeader({
                 disabled={isSaving}
               >
                 <option value="">— 미할당 —</option>
-                {allAdventures.map((adv) => (
+                {availableAdventures.map((adv) => (
                   <option key={adv.id} value={adv.id}>
                     {adv.name}
                   </option>
