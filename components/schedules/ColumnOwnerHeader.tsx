@@ -22,7 +22,7 @@ export default function ColumnOwnerHeader({
         <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">모험단 배정</h3>
         {isSaving && <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">저장 중...</span>}
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
         {columnOwners.map((adventureId, colIndex) => {
           const color = COLUMN_COLORS[colIndex];
           const otherSelected = new Set(
@@ -34,13 +34,13 @@ export default function ColumnOwnerHeader({
           return (
             <div
               key={colIndex}
-              className={`rounded-lg p-3 border-t-4 ${color.borderTop} ${color.bg}`}
+              className={`rounded-lg p-2 md:p-3 border-t-4 ${color.borderTop} ${color.bg} flex items-center gap-2 md:block`}
             >
-              <span className={`text-xs font-bold uppercase ${color.text} mb-2 block`}>
-                Position {colIndex + 1}
+              <span className={`text-xs font-bold uppercase ${color.text} md:mb-2 shrink-0`}>
+                P{colIndex + 1}
               </span>
               <select
-                className="w-full border border-gray-200 dark:border-gray-600 rounded-md p-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-300 dark:focus:ring-gray-500"
+                className="w-full border border-gray-200 dark:border-gray-600 rounded-md p-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-300 dark:focus:ring-gray-500"
                 value={adventureId || ''}
                 onChange={(e) => onOwnerChange(colIndex, e.target.value || null)}
                 disabled={isSaving}

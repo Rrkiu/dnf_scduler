@@ -31,18 +31,18 @@ export default function RootLayout({
         <header className="bg-white shadow">
           <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 justify-between items-center">
-              <div className="flex space-x-8">
-                <a href="/characters" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-blue-600">
+              <div className="flex space-x-3 md:space-x-8">
+                <a href="/characters" className="inline-flex items-center px-0.5 md:px-1 pt-1 text-xs md:text-sm font-medium text-gray-900 hover:text-blue-600">
                   Characters
                 </a>
-                <a href="/schedules" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900">
+                <a href="/schedules" className="inline-flex items-center px-0.5 md:px-1 pt-1 text-xs md:text-sm font-medium text-gray-500 hover:text-gray-900">
                   Schedules
                 </a>
-                <a href="/ranking" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900">
+                <a href="/ranking" className="inline-flex items-center px-0.5 md:px-1 pt-1 text-xs md:text-sm font-medium text-gray-500 hover:text-gray-900">
                   랭킹
                 </a>
               </div>
-              <div className="text-xl font-bold tracking-tight text-blue-600">DNF Scheduler</div>
+              <div className="text-sm md:text-xl font-bold tracking-tight text-blue-600">DNF Scheduler</div>
             </div>
           </nav>
         </header>

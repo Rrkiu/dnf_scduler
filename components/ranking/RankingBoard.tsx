@@ -154,10 +154,10 @@ export default function RankingBoard({
     : [];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 md:gap-6">
 
       {/* 헤더 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start gap-2 justify-between">
         <div>
           <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">이번 주 랭킹</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{formatWeekLabel(currentWeekKey)}</p>
@@ -177,19 +177,20 @@ export default function RankingBoard({
 
       {/* 랭킹 테이블 */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase w-10">#</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">모험단</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-cyan-500 uppercase">서약<br/>태초</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-cyan-400 uppercase">결정<br/>태초</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-orange-500 uppercase">서약<br/>에픽</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-orange-400 uppercase">결정<br/>에픽</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-cyan-300 dark:text-cyan-600 uppercase">장비<br/>태초</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-orange-300 dark:text-orange-600 uppercase">장비<br/>에픽</th>
-              <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">점수</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">칭호</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase w-8">#</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase whitespace-nowrap">모험단</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-cyan-500 uppercase whitespace-nowrap">서약<br/>태초</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-cyan-400 uppercase whitespace-nowrap">결정<br/>태초</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-orange-500 uppercase whitespace-nowrap">서약<br/>에픽</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-orange-400 uppercase whitespace-nowrap">결정<br/>에픽</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-cyan-300 dark:text-cyan-600 uppercase whitespace-nowrap">장비<br/>태초</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-orange-300 dark:text-orange-600 uppercase whitespace-nowrap">장비<br/>에픽</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase whitespace-nowrap">점수</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">칭호</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -206,11 +207,11 @@ export default function RankingBoard({
                   className={`cursor-pointer transition-colors ${rowBg}`}
                   onClick={() => setSelectedAdventureId(selectedAdventureId === adv.id ? null : adv.id)}
                 >
-                  <td className="px-4 py-4 text-sm font-bold text-gray-400 dark:text-gray-500">{i + 1}</td>
-                  <td className="px-4 py-4 text-sm font-semibold text-gray-900 dark:text-gray-100">{adv.name}</td>
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-sm font-bold text-gray-400 dark:text-gray-500">{i + 1}</td>
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-sm font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">{adv.name}</td>
 
                   {/* 서약 태초 — 채운 배지 + 글로우 */}
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-center">
                     {adv.covenantRelicCount > 0 ? (
                       <span className="inline-block px-2 py-0.5 rounded-full text-sm font-black bg-cyan-500 text-white ring-2 ring-cyan-300 shadow-sm shadow-cyan-300">
                         {adv.covenantRelicCount}
@@ -221,7 +222,7 @@ export default function RankingBoard({
                   </td>
 
                   {/* 결정 태초 — pill 배지 */}
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-center">
                     {adv.crystalRelicCount > 0 ? (
                       <span className="inline-block px-2 py-0.5 rounded-full text-sm font-bold bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300">
                         {adv.crystalRelicCount}
@@ -232,7 +233,7 @@ export default function RankingBoard({
                   </td>
 
                   {/* 서약 에픽 — 채운 배지 + 테두리 */}
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-center">
                     {adv.covenantEpicCount > 0 ? (
                       <span className="inline-block px-2 py-0.5 rounded-full text-sm font-black bg-orange-500 text-white ring-1 ring-orange-300">
                         {adv.covenantEpicCount}
@@ -243,7 +244,7 @@ export default function RankingBoard({
                   </td>
 
                   {/* 결정 에픽 — pill 배지 */}
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-center">
                     {adv.crystalEpicCount > 0 ? (
                       <span className="inline-block px-2 py-0.5 rounded-full text-sm font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
                         {adv.crystalEpicCount}
@@ -254,25 +255,25 @@ export default function RankingBoard({
                   </td>
 
                   {/* 장비 태초 — 텍스트만 */}
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-center">
                     <span className={`text-sm font-bold ${adv.itemRelicCount > 0 ? 'text-cyan-500' : 'text-gray-200 dark:text-gray-600'}`}>
                       {adv.itemRelicCount > 0 ? adv.itemRelicCount : '—'}
                     </span>
                   </td>
 
                   {/* 장비 에픽 — 텍스트만 */}
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-center">
                     <span className={`text-sm font-bold ${adv.itemEpicCount > 0 ? 'text-orange-500' : 'text-gray-200 dark:text-gray-600'}`}>
                       {adv.itemEpicCount > 0 ? adv.itemEpicCount : '—'}
                     </span>
                   </td>
 
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-center">
                     <span className={`text-sm font-bold ${adv.totalScore > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-gray-300 dark:text-gray-600'}`}>
                       {adv.totalScore.toLocaleString()}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-700 dark:text-gray-300">{adv.badges.join(' ')}</td>
+                  <td className="px-2 py-2 md:px-4 md:py-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{adv.badges.join(' ')}</td>
                 </tr>
               );
             })}
@@ -285,6 +286,7 @@ export default function RankingBoard({
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* 드랍 상세 */}
@@ -298,14 +300,15 @@ export default function RankingBoard({
           {selectedDrops.length === 0 ? (
             <p className="px-4 py-6 text-sm text-gray-400 dark:text-gray-500 text-center">이번 주 드랍 기록 없음</p>
           ) : (
+            <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400">캐릭터</th>
-                  <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400">아이템</th>
-                  <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400">등급</th>
-                  <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400">항목</th>
-                  <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400">획득 시각</th>
+                  <th className="px-2 py-2 md:px-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 whitespace-nowrap">캐릭터</th>
+                  <th className="px-2 py-2 md:px-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 whitespace-nowrap">아이템</th>
+                  <th className="px-2 py-2 md:px-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 whitespace-nowrap">등급</th>
+                  <th className="px-2 py-2 md:px-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 whitespace-nowrap">항목</th>
+                  <th className="px-2 py-2 md:px-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 whitespace-nowrap">획득 시각</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -313,9 +316,9 @@ export default function RankingBoard({
                   .sort((a, b) => new Date(b.dropped_at).getTime() - new Date(a.dropped_at).getTime())
                   .map(log => (
                     <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{log.characters?.character_name ?? '-'}</td>
-                      <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 font-medium">{log.item_name}</td>
-                      <td className="px-4 py-2 text-sm">
+                      <td className="px-2 py-2 md:px-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{log.characters?.character_name ?? '-'}</td>
+                      <td className="px-2 py-2 md:px-4 text-sm text-gray-900 dark:text-gray-100 font-medium whitespace-nowrap">{log.item_name}</td>
+                      <td className="px-2 py-2 md:px-4 text-sm whitespace-nowrap">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                           log.item_rarity === '태초'
                             ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300'
@@ -324,7 +327,7 @@ export default function RankingBoard({
                           {log.item_rarity}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-sm">
+                      <td className="px-2 py-2 md:px-4 text-sm whitespace-nowrap">
                         {(() => {
                           const cat = getItemCategory(log.timeline_code, log.item_name);
                           return (
@@ -334,11 +337,12 @@ export default function RankingBoard({
                           );
                         })()}
                       </td>
-                      <td className="px-4 py-2 text-xs text-gray-400 dark:text-gray-500">{log.dropped_at.slice(0, 16).replace('T', ' ')}</td>
+                      <td className="px-2 py-2 md:px-4 text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{log.dropped_at.slice(0, 16).replace('T', ' ')}</td>
                     </tr>
                   ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       )}

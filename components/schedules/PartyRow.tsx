@@ -55,7 +55,7 @@ export default function PartyRow({
           ✕
         </button>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3" onClick={(e) => e.stopPropagation()}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3" onClick={(e) => e.stopPropagation()}>
         {slots.map((slot, i) => (
           <PartySlot
             key={slot.position}

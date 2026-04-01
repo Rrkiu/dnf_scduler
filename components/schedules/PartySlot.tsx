@@ -43,7 +43,7 @@ export default function PartySlot({
 
   return (
     <div
-      className={`border-t-4 ${color.borderTop} ${color.bg} border border-gray-200 dark:border-gray-600 rounded-lg p-3 flex flex-col items-center min-h-[120px] hover:shadow-sm transition`}
+      className={`border-t-4 ${color.borderTop} ${color.bg} border border-gray-200 dark:border-gray-600 rounded-lg p-2 md:p-3 flex flex-col items-center hover:shadow-sm transition`}
     >
       <span className={`text-xs font-bold uppercase mb-2 px-2 py-0.5 rounded-full ${color.badge}`}>
         P{(position % 4) + 1}
@@ -57,7 +57,7 @@ export default function PartySlot({
         </div>
       ) : (
         <select
-          className={`w-full border border-gray-200 dark:border-gray-600 rounded p-1.5 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500 ${
+          className={`w-full border border-gray-200 dark:border-gray-600 rounded p-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500 ${
             !character_id ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100 font-medium'
           }`}
           value={character_id || ''}
@@ -75,7 +75,7 @@ export default function PartySlot({
         </select>
       )}
 
-      <div className="mt-2 text-xs w-full text-center min-h-[36px] flex flex-col items-center justify-center gap-1">
+      <div className="mt-1 md:mt-2 text-xs w-full text-center flex flex-col items-center justify-center gap-1">
         {assignedChar ? (
           <>
             <span className="font-semibold text-gray-700 dark:text-gray-300">{assignedChar.job}</span>
