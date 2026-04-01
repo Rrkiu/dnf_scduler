@@ -49,6 +49,7 @@ interface RankingBoardProps {
   weekScores: WeekScore[];
   recentScores: WeekScore[];
   dropLogs: DropLog[];
+  allTimeScores: WeekScore[];
 }
 
 function getBadges(adventureId: string, currentWeekKey: string, allScores: WeekScore[]): string[] {
@@ -91,11 +92,13 @@ export default function RankingBoard({
   weekScores,
   recentScores,
   dropLogs,
+  allTimeScores,
 }: RankingBoardProps) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState<string | null>(null);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
   const [selectedAdventureId, setSelectedAdventureId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'weekly' | 'alltime'>('weekly');
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -147,6 +150,22 @@ export default function RankingBoard({
     })
     .sort((a, b) => b.totalScore - a.totalScore);
 
+  const allTimeRanked = adventures
+    .map(adv => {
+      const rows = allTimeScores.filter(s => s.adventure_id === adv.id);
+      return {
+        ...adv,
+        covenantRelicCount: rows.reduce((sum, s) => sum + (s.covenant_relic_count ?? 0), 0),
+        covenantEpicCount:  rows.reduce((sum, s) => sum + (s.covenant_epic_count ?? 0), 0),
+        crystalRelicCount:  rows.reduce((sum, s) => sum + (s.crystal_relic_count ?? 0), 0),
+        crystalEpicCount:   rows.reduce((sum, s) => sum + (s.crystal_epic_count ?? 0), 0),
+        itemRelicCount:     rows.reduce((sum, s) => sum + (s.item_relic_count ?? 0), 0),
+        itemEpicCount:      rows.reduce((sum, s) => sum + (s.item_epic_count ?? 0), 0),
+        totalScore:         rows.reduce((sum, s) => sum + (s.total_score ?? 0), 0),
+      };
+    })
+    .sort((a, b) => b.totalScore - a.totalScore);
+
   const weekKeys = getRecentWeekKeys(recentScores);
 
   const selectedDrops = selectedAdventureId
@@ -159,21 +178,56 @@ export default function RankingBoard({
       {/* 헤더 */}
       <div className="flex flex-wrap items-start gap-2 justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">이번 주 랭킹</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{formatWeekLabel(currentWeekKey)}</p>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+            {activeTab === 'weekly' ? '이번 주 랭킹' : '전체 누적 랭킹'}
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            {activeTab === 'weekly' ? formatWeekLabel(currentWeekKey) : '전체 기간 합산'}
+          </p>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <button
-            onClick={handleSync}
-            disabled={isSyncing}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition disabled:opacity-50"
-          >
-            {isSyncing ? '갱신 중...' : '드랍 데이터 갱신'}
-          </button>
-          {syncProgress && <p className="text-xs text-blue-400">{syncProgress}</p>}
-          {!syncProgress && syncMsg && <p className="text-xs text-gray-500 dark:text-gray-400">{syncMsg}</p>}
+          {activeTab === 'weekly' && (
+            <>
+              <button
+                onClick={handleSync}
+                disabled={isSyncing}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition disabled:opacity-50"
+              >
+                {isSyncing ? '갱신 중...' : '드랍 데이터 갱신'}
+              </button>
+              {syncProgress && <p className="text-xs text-blue-400">{syncProgress}</p>}
+              {!syncProgress && syncMsg && <p className="text-xs text-gray-500 dark:text-gray-400">{syncMsg}</p>}
+            </>
+          )}
         </div>
       </div>
+
+      {/* 탭 */}
+      <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700">
+        <button
+          onClick={() => setActiveTab('weekly')}
+          className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'weekly'
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+          }`}
+        >
+          이번 주
+        </button>
+        <button
+          onClick={() => setActiveTab('alltime')}
+          className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'alltime'
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+          }`}
+        >
+          전체 누적
+        </button>
+      </div>
+
+      {/* 이번 주 탭 */}
+      {activeTab === 'weekly' && <>
 
       {/* 랭킹 테이블 */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -224,7 +278,7 @@ export default function RankingBoard({
                   {/* 결정 태초 — pill 배지 */}
                   <td className="px-2 py-2 md:px-4 md:py-4 text-center">
                     {adv.crystalRelicCount > 0 ? (
-                      <span className="inline-block px-2 py-0.5 rounded-full text-sm font-bold bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300">
+                      <span className="animate-glow-badge inline-block px-2 py-0.5 rounded-full text-sm font-bold bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300">
                         {adv.crystalRelicCount}
                       </span>
                     ) : (
@@ -400,6 +454,91 @@ export default function RankingBoard({
           </div>
         </div>
       )}
+
+      </> /* 이번 주 탭 끝 */}
+
+      {/* 전체 누적 탭 */}
+      {activeTab === 'alltime' && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase w-8">#</th>
+                  <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase whitespace-nowrap">모험단</th>
+                  <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-cyan-500 uppercase whitespace-nowrap">서약<br/>태초</th>
+                  <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-cyan-400 uppercase whitespace-nowrap">결정<br/>태초</th>
+                  <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-orange-500 uppercase whitespace-nowrap">서약<br/>에픽</th>
+                  <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-orange-400 uppercase whitespace-nowrap">결정<br/>에픽</th>
+                  <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-cyan-300 dark:text-cyan-600 uppercase whitespace-nowrap">장비<br/>태초</th>
+                  <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-orange-300 dark:text-orange-600 uppercase whitespace-nowrap">장비<br/>에픽</th>
+                  <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase whitespace-nowrap">누적 점수</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {allTimeRanked.map((adv, i) => (
+                  <tr key={adv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td className="px-2 py-2 md:px-4 md:py-4 text-sm font-bold text-gray-400 dark:text-gray-500">{i + 1}</td>
+                    <td className="px-2 py-2 md:px-4 md:py-4 text-sm font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">{adv.name}</td>
+                    <td className="px-2 py-2 md:px-4 md:py-4 text-center">
+                      {adv.covenantRelicCount > 0 ? (
+                        <span className="animate-glow-badge inline-block px-2 py-0.5 rounded-full text-sm font-black bg-cyan-500 text-white">
+                          {adv.covenantRelicCount}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-200 dark:text-gray-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 md:px-4 md:py-4 text-center">
+                      {adv.crystalRelicCount > 0 ? (
+                        <span className="animate-glow-badge inline-block px-2 py-0.5 rounded-full text-sm font-bold bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300">
+                          {adv.crystalRelicCount}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-200 dark:text-gray-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 md:px-4 md:py-4 text-center">
+                      {adv.covenantEpicCount > 0 ? (
+                        <span className="inline-block px-2 py-0.5 rounded-full text-sm font-black bg-orange-500 text-white ring-1 ring-orange-300">
+                          {adv.covenantEpicCount}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-200 dark:text-gray-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 md:px-4 md:py-4 text-center">
+                      {adv.crystalEpicCount > 0 ? (
+                        <span className="inline-block px-2 py-0.5 rounded-full text-sm font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+                          {adv.crystalEpicCount}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-200 dark:text-gray-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 md:px-4 md:py-4 text-center">
+                      <span className={`text-sm font-bold ${adv.itemRelicCount > 0 ? 'text-cyan-500' : 'text-gray-200 dark:text-gray-600'}`}>
+                        {adv.itemRelicCount > 0 ? adv.itemRelicCount : '—'}
+                      </span>
+                    </td>
+                    <td className="px-2 py-2 md:px-4 md:py-4 text-center">
+                      <span className={`text-sm font-bold ${adv.itemEpicCount > 0 ? 'text-orange-500' : 'text-gray-200 dark:text-gray-600'}`}>
+                        {adv.itemEpicCount > 0 ? adv.itemEpicCount : '—'}
+                      </span>
+                    </td>
+                    <td className="px-2 py-2 md:px-4 md:py-4 text-center">
+                      <span className={`text-sm font-bold ${adv.totalScore > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-gray-300 dark:text-gray-600'}`}>
+                        {adv.totalScore.toLocaleString()}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -7,7 +7,7 @@ export const revalidate = 0;
 export default async function RankingPage() {
   const currentWeekKey = getCurrentWeekKey();
 
-  const [adventuresRes, currentScoresRes, recentScoresRes, dropLogsRes] = await Promise.all([
+  const [adventuresRes, currentScoresRes, recentScoresRes, dropLogsRes, allTimeScoresRes] = await Promise.all([
     supabase.from('adventures').select('id, name').order('name'),
     supabase
       .from('gear_weekly_scores')
@@ -23,12 +23,16 @@ export default async function RankingPage() {
       .select('id, adventure_id, character_id, item_name, item_rarity, timeline_code, dropped_at, characters(character_name)')
       .eq('week_key', currentWeekKey)
       .order('dropped_at', { ascending: false }),
+    supabase
+      .from('gear_weekly_scores')
+      .select('adventure_id, covenant_relic_count, covenant_epic_count, crystal_relic_count, crystal_epic_count, item_relic_count, item_epic_count, total_score'),
   ]);
 
   const adventures = adventuresRes.data ?? [];
   const weekScores = (currentScoresRes.data ?? []) as any[];
   const recentScores = (recentScoresRes.data ?? []) as any[];
   const dropLogs = (dropLogsRes.data ?? []) as any[];
+  const allTimeScores = (allTimeScoresRes.data ?? []) as any[];
 
   return (
     <main className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen">
@@ -43,6 +47,7 @@ export default async function RankingPage() {
         weekScores={weekScores}
         recentScores={recentScores}
         dropLogs={dropLogs}
+        allTimeScores={allTimeScores}
       />
     </main>
   );
