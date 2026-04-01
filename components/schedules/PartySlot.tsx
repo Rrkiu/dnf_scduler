@@ -69,7 +69,7 @@ export default function PartySlot({
               [{char.role === 'buffer' ? 'B' : 'D'}] {char.character_name}{' '}
               {char.role === 'dealer'
                 ? `(${char.damage.toFixed(1)})`
-                : `(${char.buff_power.toLocaleString()})`}
+                : `(${char.buff_power.toLocaleString('en-US')})`}
             </option>
           ))}
         </select>

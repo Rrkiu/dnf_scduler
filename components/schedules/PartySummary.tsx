@@ -21,7 +21,7 @@ export default function PartySummary({ slots }: PartySummaryProps) {
         <span className="font-medium text-red-600 dark:text-red-400">Dealers</span>: {dealerSlots.length} &mdash; Dmg: {totalDamage.toFixed(1)}
       </span>
       <span>
-        <span className="font-medium text-blue-600 dark:text-blue-400">Buffers</span>: {bufferSlots.length} &mdash; B.Pow: {totalBuff.toLocaleString()}
+        <span className="font-medium text-blue-600 dark:text-blue-400">Buffers</span>: {bufferSlots.length} &mdash; B.Pow: {totalBuff.toLocaleString('en-US')}
       </span>
     </div>
   );
