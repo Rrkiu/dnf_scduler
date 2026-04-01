@@ -213,7 +213,7 @@ export default function RankingBoard({
                   {/* 서약 태초 — 채운 배지 + 글로우 */}
                   <td className="px-2 py-2 md:px-4 md:py-4 text-center">
                     {adv.covenantRelicCount > 0 ? (
-                      <span className="inline-block px-2 py-0.5 rounded-full text-sm font-black bg-cyan-500 text-white ring-2 ring-cyan-300 shadow-sm shadow-cyan-300">
+                      <span className="animate-glow-badge inline-block px-2 py-0.5 rounded-full text-sm font-black bg-cyan-500 text-white">
                         {adv.covenantRelicCount}
                       </span>
                     ) : (
