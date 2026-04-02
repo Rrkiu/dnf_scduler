@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Character, Adventure } from '@/types';
 import { supabase } from '@/lib/supabase';
 
@@ -10,6 +11,7 @@ interface CharacterTableProps {
 }
 
 export default function CharacterTable({ characters: initialCharacters, adventures }: CharacterTableProps) {
+  const router = useRouter();
   const [characters, setCharacters] = useState(initialCharacters);
   const [selectedAdventureId, setSelectedAdventureId] = useState<string | null>(null);
 
@@ -83,7 +85,11 @@ export default function CharacterTable({ characters: initialCharacters, adventur
             {filtered.map((char) => (
               <tr key={char.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{adventureName(char.adventure_id)}</td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{char.character_name}</td>
+                <td
+                  className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer select-none"
+                  title="더블클릭으로 상세 보기"
+                  onDoubleClick={() => router.push(`/characters/${char.id}`)}
+                >{char.character_name}</td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{char.server}</td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{char.job}</td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">

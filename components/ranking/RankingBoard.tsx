@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { formatWeekLabel } from '@/lib/gear-week';
 
 interface WeekScore {
@@ -375,7 +376,13 @@ export default function RankingBoard({
                       !log.item_name.includes('결정');
                     return (
                     <tr key={log.id} className={isCovenantRelic ? 'animate-glow-covenant' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}>
-                      <td className="px-2 py-2 md:px-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{log.characters?.character_name ?? '-'}</td>
+                      <td className="px-2 py-2 md:px-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                        {log.character_id && log.characters?.character_name ? (
+                          <Link href={`/characters/${log.character_id}`} className="hover:underline hover:text-blue-600 dark:hover:text-blue-400">
+                            {log.characters.character_name}
+                          </Link>
+                        ) : (log.characters?.character_name ?? '-')}
+                      </td>
                       <td className="px-2 py-2 md:px-4 text-sm text-gray-900 dark:text-gray-100 font-medium whitespace-nowrap">{log.item_name}</td>
                       <td className="px-2 py-2 md:px-4 text-sm whitespace-nowrap">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${

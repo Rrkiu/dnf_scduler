@@ -43,3 +43,16 @@ CREATE TABLE schedule_slots (
   role TEXT CHECK (role IN ('dealer', 'buffer')),
   UNIQUE(schedule_id, position)
 );
+
+-- Create CharacterSnapshots table
+CREATE TABLE character_snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  character_id UUID NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  snapshot_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  equipment JSONB,
+  oath JSONB,
+  status JSONB,
+  relic_count INTEGER DEFAULT 0,
+  epic_count INTEGER DEFAULT 0,
+  set_names TEXT[] DEFAULT '{}'
+);
