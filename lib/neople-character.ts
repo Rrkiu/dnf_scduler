@@ -33,10 +33,6 @@ export async function fetchCharacterEquipment(
     throw new Error(`Equipment API ${res.status}`);
   }
   const data = await res.json();
-  const amplified = (data?.equipment ?? []).filter((e: any) => e.amplificationName);
-  if (amplified.length > 0) console.log('[equipment] amplified sample:', JSON.stringify(amplified[0], null, 2));
-  const weapon = (data?.equipment ?? []).find((e: any) => e.slotName === '무기');
-  if (weapon) console.log('[equipment] weapon sample:', JSON.stringify(weapon, null, 2));
   return data?.equipment ?? [];
 }
 

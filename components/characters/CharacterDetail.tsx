@@ -167,7 +167,7 @@ export default function CharacterDetail({ characterId, hasNeopleId, initialSnaps
         ) : (
           <>
             <p className="text-xs text-gray-400 dark:text-gray-500 mb-4 text-right">
-              스냅샷: {snapshot.snapshot_at.slice(0, 16).replace('T', ' ')}
+              스냅샷: {new Date(new Date(snapshot.snapshot_at).getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16).replace('T', ' ')}
             </p>
 
             {activeTab === 'equipment' && (
@@ -227,7 +227,7 @@ function EquipmentTab({ equipment }: { equipment: EquipmentSlot[] }) {
                   )}
                 </span>
                 <span className={`truncate flex-1 ${ITEM_NAME_COLOR[slot.itemRarity] ?? 'text-gray-900 dark:text-gray-100'}`}>{slot.itemName}</span>
-                <span className={`ml-auto shrink-0 px-1.5 py-0.5 rounded text-xs font-bold ${RARITY_STYLE[slot.itemRarity] ?? 'bg-gray-100 text-gray-500'}`}>
+                <span className={`ml-auto shrink-0 px-1.5 py-0.5 rounded text-xs font-bold ${ITEM_NAME_COLOR[slot.itemRarity] ?? 'text-gray-500'}`}>
                   {slot.itemRarity}
                 </span>
               </div>

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import CharacterTable from '@/components/CharacterTable';
 import SyncButton from '@/components/SyncButton';
+import SnapshotAllButton from '@/components/SnapshotAllButton';
 import { Character } from '@/types';
 
 // Force revalidation so we don't cache database old results in dev/prod
@@ -34,7 +35,10 @@ export default async function CharactersPage() {
       </div>
       
       <div>
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Character Roster</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Character Roster</h2>
+          <SnapshotAllButton characters={characters} />
+        </div>
         <CharacterTable characters={characters} adventures={adventures} />
       </div>
     </main>

@@ -33,10 +33,13 @@ export default function RootLayout({
             <div className="flex h-16 justify-between items-center">
               <div className="flex space-x-3 md:space-x-8">
                 <a href="/characters" className="inline-flex items-center px-0.5 md:px-1 pt-1 text-xs md:text-sm font-medium text-gray-900 hover:text-blue-600">
-                  Characters
+                  캐릭터
+                </a>
+                <a href="/adventures" className="inline-flex items-center px-0.5 md:px-1 pt-1 text-xs md:text-sm font-medium text-gray-500 hover:text-gray-900">
+                  모험단
                 </a>
                 <a href="/schedules" className="inline-flex items-center px-0.5 md:px-1 pt-1 text-xs md:text-sm font-medium text-gray-500 hover:text-gray-900">
-                  Schedules
+                  스케줄
                 </a>
                 <a href="/ranking" className="inline-flex items-center px-0.5 md:px-1 pt-1 text-xs md:text-sm font-medium text-gray-500 hover:text-gray-900">
                   랭킹
