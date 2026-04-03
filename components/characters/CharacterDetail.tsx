@@ -11,6 +11,7 @@ interface EquipmentSlot {
   setItemId?: string;
   setItemName?: string;
   reinforce?: number;
+  refine?: number;
   amplificationName?: string | null;
 }
 
@@ -57,6 +58,21 @@ interface CharacterDetailProps {
   characterId: string;
   hasNeopleId: boolean;
   initialSnapshot: Snapshot | null;
+}
+
+const ITEM_NAME_COLOR: Record<string, string> = {
+  '레어':     'text-purple-600 dark:text-purple-400',
+  '유니크':   'text-pink-500 dark:text-pink-400',
+  '레전더리': 'text-amber-700 dark:text-amber-500',
+  '에픽':     'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-transparent rounded-sm px-0.5',
+  '태초':     'text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-transparent rounded-sm px-0.5',
+};
+
+function getRarityColor(name: string): string {
+  for (const rarity of ['태초', '에픽', '레전더리', '유니크', '레어']) {
+    if (name.includes(rarity)) return ITEM_NAME_COLOR[rarity] ?? '';
+  }
+  return 'text-gray-500 dark:text-gray-400';
 }
 
 const RARITY_STYLE: Record<string, string> = {
@@ -200,7 +216,17 @@ function EquipmentTab({ equipment }: { equipment: EquipmentSlot[] }) {
             {slots.map(slot => (
               <div key={slot.slotId} className="flex items-center gap-2 text-sm">
                 <span className="text-gray-400 dark:text-gray-500 w-16 shrink-0 text-xs">{slot.slotName}</span>
-                <span className="text-gray-900 dark:text-gray-100 truncate">{slot.itemName}</span>
+                <span className="w-24 shrink-0 text-xs font-bold flex items-center gap-1">
+                  {slot.amplificationName ? (
+                    <span className="text-fuchsia-400">+{slot.reinforce ?? 0}</span>
+                  ) : slot.reinforce && slot.reinforce > 0 ? (
+                    <span className="text-sky-400">+{slot.reinforce}</span>
+                  ) : null}
+                  {slot.slotId === 'WEAPON' && slot.refine && slot.refine > 0 && (
+                    <span className="text-gray-400 dark:text-gray-500">({slot.refine})</span>
+                  )}
+                </span>
+                <span className={`truncate flex-1 ${ITEM_NAME_COLOR[slot.itemRarity] ?? 'text-gray-900 dark:text-gray-100'}`}>{slot.itemName}</span>
                 <span className={`ml-auto shrink-0 px-1.5 py-0.5 rounded text-xs font-bold ${RARITY_STYLE[slot.itemRarity] ?? 'bg-gray-100 text-gray-500'}`}>
                   {slot.itemRarity}
                 </span>
@@ -299,26 +325,18 @@ function OathTab({ oath }: { oath: OathData | null }) {
 
   return (
     <div className="space-y-5">
-      {/* 서약 아이템 */}
-      <div className="flex items-center gap-2">
-        <span className="font-semibold text-gray-900 dark:text-gray-100">{oath.info.itemName}</span>
-        <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${RARITY_STYLE[oath.info.itemRarity] ?? 'bg-gray-100 text-gray-500'}`}>
-          {oath.info.itemRarity}
-        </span>
-      </div>
-
-      {/* 세트 정보 */}
+      {/* 1. 서약 세트 정보 */}
       {oath.setInfo && (
-        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-1">
+        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{oath.setInfo.setName}</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">{oath.setInfo.setRarityName}</span>
+            <span className={`text-sm font-semibold ${getRarityColor(oath.setInfo.setRarityName)}`}>{oath.setInfo.setName}</span>
+            <span className={`text-xs font-semibold ${getRarityColor(oath.setInfo.setRarityName)}`}>{oath.setInfo.setRarityName}</span>
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            세트 포인트: {oath.setInfo.active.setPoint.current} / {oath.setInfo.active.setPoint.max}
+            세트 포인트: <span className={`font-semibold ${getRarityColor(oath.setInfo.setRarityName)}`}>{oath.setInfo.active.setPoint.current}</span> / {oath.setInfo.active.setPoint.max}
           </div>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {oath.setInfo.active.status.map((s, i) => (
+          <div className="flex flex-wrap gap-2">
+            {(oath.setInfo.active.status ?? []).map((s, i) => (
               <span key={i} className="text-xs bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded">
                 {s.key}: {s.value}
               </span>
@@ -327,10 +345,16 @@ function OathTab({ oath }: { oath: OathData | null }) {
         </div>
       )}
 
-      {/* 축복 효과 */}
-      {oath.blessing && (
-        <div>
-          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">축복 효과</div>
+      {/* 2. 장착 서약 */}
+      <div>
+        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">장착 서약</div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className={`font-semibold ${ITEM_NAME_COLOR[oath.info.itemRarity] ?? 'text-gray-900 dark:text-gray-100'}`}>{oath.info.itemName}</span>
+          <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${ITEM_NAME_COLOR[oath.info.itemRarity] ?? 'text-gray-500'}`}>
+            {oath.info.itemRarity}
+          </span>
+        </div>
+        {oath.blessing && (
           <div className="flex flex-wrap gap-2">
             {oath.blessing.status.map((s, i) => (
               <span key={i} className="text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded">
@@ -338,19 +362,19 @@ function OathTab({ oath }: { oath: OathData | null }) {
               </span>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* 결정 슬롯 */}
+      {/* 3. 장착 결정 */}
       {oath.crystal?.length > 0 && (
         <div>
-          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">결정 ({oath.crystal.length})</div>
+          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">장착 결정 ({oath.crystal.length})</div>
           <div className="space-y-1">
             {oath.crystal.map((c) => (
               <div key={c.slotNo} className="flex items-center gap-2 text-sm">
                 <span className="text-gray-400 dark:text-gray-500 w-6 shrink-0 text-xs">{c.slotNo}</span>
-                <span className="text-gray-900 dark:text-gray-100 truncate">{c.itemName}</span>
-                <span className={`ml-auto shrink-0 px-1.5 py-0.5 rounded text-xs font-bold ${RARITY_STYLE[c.itemRarity] ?? 'bg-gray-100 text-gray-500'}`}>
+                <span className={`truncate ${ITEM_NAME_COLOR[c.itemRarity] ?? 'text-gray-900 dark:text-gray-100'}`}>{c.itemName}</span>
+                <span className={`ml-auto shrink-0 px-1.5 py-0.5 rounded text-xs font-bold ${ITEM_NAME_COLOR[c.itemRarity] ?? 'text-gray-500'}`}>
                   {c.itemRarity}
                 </span>
               </div>

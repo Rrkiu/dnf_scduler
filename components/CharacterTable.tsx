@@ -14,6 +14,7 @@ export default function CharacterTable({ characters: initialCharacters, adventur
   const router = useRouter();
   const [characters, setCharacters] = useState(initialCharacters);
   const [selectedAdventureId, setSelectedAdventureId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this character?')) return;
@@ -29,9 +30,9 @@ export default function CharacterTable({ characters: initialCharacters, adventur
   const adventureName = (id: string) =>
     adventures.find(a => a.id === id)?.name ?? id;
 
-  const filtered = selectedAdventureId
-    ? characters.filter(c => c.adventure_id === selectedAdventureId)
-    : characters;
+  const filtered = characters
+    .filter(c => !selectedAdventureId || c.adventure_id === selectedAdventureId)
+    .filter(c => !search || c.character_name.toLowerCase().includes(search.toLowerCase()));
 
   if (!characters.length) {
     return <p className="text-gray-500 dark:text-gray-400 py-4">No characters found. Sync to fetch data.</p>;
@@ -39,8 +40,8 @@ export default function CharacterTable({ characters: initialCharacters, adventur
 
   return (
     <div className="mt-4">
-      {/* Adventure 필터 탭 */}
-      <div className="flex gap-2 flex-wrap mb-4">
+      {/* Adventure 필터 탭 + 검색 */}
+      <div className="flex items-center gap-2 flex-wrap mb-4">
         <button
           onClick={() => setSelectedAdventureId(null)}
           className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
@@ -64,6 +65,13 @@ export default function CharacterTable({ characters: initialCharacters, adventur
             {adv.name}
           </button>
         ))}
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="캐릭터 검색..."
+          className="ml-auto px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
       </div>
 
       <div className="overflow-x-auto shadow ring-1 ring-black/5 dark:ring-white/10 rounded-lg">
