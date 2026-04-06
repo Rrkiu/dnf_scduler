@@ -226,8 +226,8 @@ function HellTab({ adventureId, completedWeeks, initialHellEntries, weekScores }
     }
   };
 
+  // 입장 횟수가 입력된 주차만 누적 합산
   const entryCount = hellEntries[selectedWeek] ?? null;
-  const scores = weekScores[selectedWeek] ?? null;
 
   const categories = [
     { label: '서약',      relicKey: 'covenant_relic_count', epicKey: 'covenant_epic_count', multiplier: HELL_DROP_MULTIPLIERS.covenant },
@@ -235,16 +235,34 @@ function HellTab({ adventureId, completedWeeks, initialHellEntries, weekScores }
     { label: '장비',      relicKey: 'item_relic_count',     epicKey: 'item_epic_count',     multiplier: HELL_DROP_MULTIPLIERS.item },
   ];
 
-  const effectiveRuns = (multiplier: number) =>
-    entryCount !== null ? entryCount * multiplier : null;
+  // 입장 횟수 등록된 주차만 드랍 합산
+  const recordedWeeks = Object.keys(hellEntries);
+  const totalEntries = recordedWeeks.reduce((s, w) => s + hellEntries[w], 0);
+  const cumScores = recordedWeeks.reduce((acc, w) => {
+    const s = weekScores[w];
+    if (!s) return acc;
+    for (const cat of categories) {
+      acc[cat.relicKey] = (acc[cat.relicKey] ?? 0) + (s[cat.relicKey] ?? 0);
+      acc[cat.epicKey]  = (acc[cat.epicKey]  ?? 0) + (s[cat.epicKey]  ?? 0);
+    }
+    return acc;
+  }, {} as Record<string, number>);
 
-  const dropRate = (count: number, runs: number | null) => {
-    if (runs === null || runs === 0) return null;
+  const dropRate = (count: number, runs: number) => {
+    if (runs === 0) return null;
     return (count / runs) * 100;
   };
 
+  const hasData = totalEntries > 0;
+
   return (
     <div className="space-y-5">
+      {/* 안내 문구 */}
+      <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-4 py-3 leading-relaxed">
+        주간 던파의 <span className="font-semibold text-gray-700 dark:text-gray-300">최후의 조율자</span> 클리어 횟수를 주차별로 기록해주세요.
+        주차가 종료된 이후 해당 주차를 선택하여 입력할 수 있습니다.
+      </div>
+
       {/* 주차 선택 + 입장 횟수 입력 */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
@@ -290,15 +308,15 @@ function HellTab({ adventureId, completedWeeks, initialHellEntries, weekScores }
 
       {saveError && <p className="text-xs text-red-500">{saveError}</p>}
 
-      {/* 드랍률 테이블 */}
-      {entryCount === null || scores === null ? (
+      {/* 누적 드랍률 테이블 */}
+      {!hasData ? (
         <p className="text-sm text-gray-400 dark:text-gray-500 italic py-4 text-center">
-          {entryCount === null ? '입장 횟수를 입력하면 드랍률이 표시됩니다.' : '해당 주차의 드랍 기록이 없습니다.'}
+          입장 횟수를 입력하면 누적 드랍률이 표시됩니다.
         </p>
       ) : (
         <div>
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-            총 입장 {entryCount.toLocaleString('en-US')}회 기준
+            누적 입장 {totalEntries.toLocaleString('en-US')}회 기준 ({recordedWeeks.length}주차 합산)
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
@@ -321,9 +339,9 @@ function HellTab({ adventureId, completedWeeks, initialHellEntries, weekScores }
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700 bg-white dark:bg-gray-800">
                 {categories.map(cat => {
-                  const relicCount = scores[cat.relicKey] ?? 0;
-                  const epicCount  = scores[cat.epicKey]  ?? 0;
-                  const runs = effectiveRuns(cat.multiplier);
+                  const relicCount = cumScores[cat.relicKey] ?? 0;
+                  const epicCount  = cumScores[cat.epicKey]  ?? 0;
+                  const runs = totalEntries * cat.multiplier;
                   const relicRate = dropRate(relicCount, runs);
                   const epicRate  = dropRate(epicCount,  runs);
 
@@ -334,17 +352,17 @@ function HellTab({ adventureId, completedWeeks, initialHellEntries, weekScores }
                         <span className={`font-semibold ${RARITY_COLOR['태초']}`}>{relicCount}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        {relicRate !== null ? (
-                          <span className={`font-semibold ${RARITY_COLOR['태초']}`}>{relicRate.toFixed(1)}%</span>
-                        ) : <Dash />}
+                        {relicRate !== null
+                          ? <span className={`font-semibold ${RARITY_COLOR['태초']}`}>{relicRate.toFixed(1)}%</span>
+                          : <Dash />}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={`font-semibold ${RARITY_COLOR['에픽']}`}>{epicCount}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        {epicRate !== null ? (
-                          <span className={`font-semibold ${RARITY_COLOR['에픽']}`}>{epicRate.toFixed(1)}%</span>
-                        ) : <Dash />}
+                        {epicRate !== null
+                          ? <span className={`font-semibold ${RARITY_COLOR['에픽']}`}>{epicRate.toFixed(1)}%</span>
+                          : <Dash />}
                       </td>
                     </tr>
                   );
@@ -353,12 +371,12 @@ function HellTab({ adventureId, completedWeeks, initialHellEntries, weekScores }
             </table>
           </div>
 
-          {/* 전체 집계 드랍률 */}
+          {/* 전체 합산 */}
           {(() => {
-            const totalRelic = categories.reduce((s, cat) => s + (scores[cat.relicKey] ?? 0), 0);
-            const totalEpic  = categories.reduce((s, cat) => s + (scores[cat.epicKey]  ?? 0), 0);
-            const totalRelicRate = entryCount > 0 ? (totalRelic / entryCount) * 100 : null;
-            const totalEpicRate  = entryCount > 0 ? (totalEpic  / entryCount) * 100 : null;
+            const totalRelic = categories.reduce((s, cat) => s + (cumScores[cat.relicKey] ?? 0), 0);
+            const totalEpic  = categories.reduce((s, cat) => s + (cumScores[cat.epicKey]  ?? 0), 0);
+            const totalRelicRate = dropRate(totalRelic, totalEntries);
+            const totalEpicRate  = dropRate(totalEpic,  totalEntries);
             return (
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-right">
                 전체 집계 —{' '}
