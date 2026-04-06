@@ -6,7 +6,7 @@ export const revalidate = 0;
 export default async function AdventuresPage() {
   const [{ data: adventureData }, { data: characterData }, { data: snapshotData }] = await Promise.all([
     supabase.from('adventures').select('id, name').order('name', { ascending: true }),
-    supabase.from('characters').select('id, adventure_id, character_name, job, role, fame').order('fame', { ascending: false }),
+    supabase.from('characters').select('id, adventure_id, role, fame').order('fame', { ascending: false }),
     supabase.from('character_snapshots').select('character_id, oath, snapshot_at').order('snapshot_at', { ascending: false }),
   ]);
 
@@ -14,7 +14,6 @@ export default async function AdventuresPage() {
   const characters = characterData ?? [];
   const snapshots = snapshotData ?? [];
 
-  // 캐릭터별 최신 스냅샷
   const latestSnapshot = new Map<string, any>();
   for (const snap of snapshots) {
     if (!latestSnapshot.has(snap.character_id)) {
@@ -22,7 +21,6 @@ export default async function AdventuresPage() {
     }
   }
 
-  // 전체 요약
   const totalDealers = characters.filter((c: any) => c.role === 'dealer').length;
   const totalBuffers = characters.filter((c: any) => c.role === 'buffer').length;
   const totalOathPoints = [...latestSnapshot.values()].reduce(
@@ -58,23 +56,28 @@ export default async function AdventuresPage() {
       {/* 모험단 카드 목록 */}
       <div className="space-y-3">
         {adventures.map((adv: any) => {
-          const chars = characters
-            .filter((c: any) => c.adventure_id === adv.id)
-            .map((c: any) => {
-              const oath = latestSnapshot.get(c.id);
-              return {
-                id: c.id,
-                character_name: c.character_name,
-                job: c.job,
-                role: c.role,
-                fame: c.fame,
-                oathSetName: oath?.setInfo?.setName ?? null,
-                oathSetRarityName: oath?.setInfo?.setRarityName ?? null,
-                oathSetPoint: oath?.setInfo?.active?.setPoint?.current ?? null,
-              };
-            });
+          const chars = characters.filter((c: any) => c.adventure_id === adv.id);
+          const dealers = chars.filter((c: any) => c.role === 'dealer').length;
+          const buffers = chars.filter((c: any) => c.role === 'buffer').length;
+          const avgFame = chars.length
+            ? Math.round(chars.reduce((s: number, c: any) => s + c.fame, 0) / chars.length)
+            : 0;
+          const oathTotal = chars.reduce((sum: number, c: any) => {
+            return sum + (latestSnapshot.get(c.id)?.setInfo?.active?.setPoint?.current ?? 0);
+          }, 0);
 
-          return <AdventureCard key={adv.id} name={adv.name} characters={chars} />;
+          return (
+            <AdventureCard
+              key={adv.id}
+              id={adv.id}
+              name={adv.name}
+              characterCount={chars.length}
+              dealerCount={dealers}
+              bufferCount={buffers}
+              avgFame={avgFame}
+              oathTotal={oathTotal}
+            />
+          );
         })}
       </div>
     </main>

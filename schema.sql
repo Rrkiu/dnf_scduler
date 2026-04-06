@@ -44,6 +44,18 @@ CREATE TABLE schedule_slots (
   UNIQUE(schedule_id, position)
 );
 
+-- Create AdventureHellEntries table
+CREATE TABLE adventure_hell_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  adventure_id UUID NOT NULL REFERENCES adventures(id) ON DELETE CASCADE,
+  week_key TEXT NOT NULL,
+  entry_count INTEGER NOT NULL DEFAULT 0,
+  content_type TEXT NOT NULL DEFAULT 'hell',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(adventure_id, week_key, content_type)
+);
+
 -- Create CharacterSnapshots table
 CREATE TABLE character_snapshots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

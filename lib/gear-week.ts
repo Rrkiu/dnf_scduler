@@ -59,6 +59,35 @@ export function formatNeopleDate(date: Date): string {
 
 // 시즌 시작일 (KST)
 export const SEASON_START = '20260326T1000';
+export const SEASON_START_WEEK_KEY = '2026-03-26'; // 시즌 첫 주 week_key
+
+// 헬던전 카테고리별 드랍 배수 (확장 시 content_type별로 분기)
+export const HELL_DROP_MULTIPLIERS = {
+  item:     1, // 장비
+  covenant: 1, // 서약
+  crystal:  1, // 서약 결정
+};
+
+// 완료된 주차 목록 반환 (현재 진행 중인 주차 제외, 최신순)
+export function getCompletedWeekKeys(): string[] {
+  const currentKey = getCurrentWeekKey();
+  const [cy, cm, cd] = currentKey.split('-').map(Number);
+  const currentThursday = new Date(Date.UTC(cy, cm - 1, cd));
+
+  const [sy, sm, sd] = SEASON_START_WEEK_KEY.split('-').map(Number);
+  const weeks: string[] = [];
+  let d = new Date(Date.UTC(sy, sm - 1, sd));
+
+  while (d < currentThursday) {
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    weeks.push(`${y}-${m}-${day}`);
+    d = new Date(d.getTime() + 7 * 24 * 60 * 60 * 1000);
+  }
+
+  return weeks.reverse(); // 최신순
+}
 
 const COVENANT_CODES = [550, 551, 552];
 
