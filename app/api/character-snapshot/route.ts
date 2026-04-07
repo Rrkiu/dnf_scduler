@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       equipment.map(e => e.setItemName).filter(Boolean) as string[]
     )];
 
-    const { data: snapshot, error: upsertError } = await supabase
+    const { data: snapshot, error: insertError } = await supabase
       .from('character_snapshots')
       .insert({
         character_id: character.id,
@@ -55,7 +55,14 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    if (upsertError) throw new Error(upsertError.message);
+    if (insertError) throw new Error(insertError.message);
+
+    // 최신 1건만 유지: 방금 저장한 것 외 이전 스냅샷 삭제
+    await supabase
+      .from('character_snapshots')
+      .delete()
+      .eq('character_id', character.id)
+      .neq('id', snapshot.id);
 
     return NextResponse.json({ success: true, snapshot });
   } catch (err: any) {
