@@ -51,6 +51,17 @@ interface RankingBoardProps {
   recentScores: WeekScore[];
   dropLogs: DropLog[];
   allTimeScores: WeekScore[];
+  lastSyncAt: string | null;
+}
+
+function formatKST(isoString: string): string {
+  const d = new Date(isoString);
+  const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mi = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${mm}/${dd} ${hh}:${mi}`;
 }
 
 function getBadges(adventureId: string, currentWeekKey: string, allScores: WeekScore[]): string[] {
@@ -94,10 +105,12 @@ export default function RankingBoard({
   recentScores,
   dropLogs,
   allTimeScores,
+  lastSyncAt,
 }: RankingBoardProps) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState<string | null>(null);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
+  const [lastSynced, setLastSynced] = useState<string | null>(lastSyncAt);
   const [selectedAdventureId, setSelectedAdventureId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'weekly' | 'alltime'>('weekly');
 
@@ -124,6 +137,7 @@ export default function RankingBoard({
           results.push(`${adv.name}: ${data.totalDropsFound}개`);
         }
       }
+      setLastSynced(new Date().toISOString());
       setSyncMsg(`갱신 완료 — ${results.join(' / ')}`);
       window.location.reload();
     } catch (err: any) {
@@ -189,15 +203,22 @@ export default function RankingBoard({
         <div className="flex flex-col items-end gap-1">
           {activeTab === 'weekly' && (
             <>
-              <button
-                onClick={handleSync}
-                disabled={isSyncing}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition disabled:opacity-50"
-              >
-                {isSyncing ? '갱신 중...' : '드랍 데이터 갱신'}
-              </button>
-              {syncProgress && <p className="text-xs text-blue-400">{syncProgress}</p>}
-              {!syncProgress && syncMsg && <p className="text-xs text-gray-500 dark:text-gray-400">{syncMsg}</p>}
+              <div className="flex items-center gap-3">
+                {lastSynced && (
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    마지막 갱신: {formatKST(lastSynced)}
+                  </span>
+                )}
+                <button
+                  onClick={handleSync}
+                  disabled={isSyncing}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition disabled:opacity-50"
+                >
+                  {isSyncing ? '갱신 중...' : '드랍 데이터 갱신'}
+                </button>
+              </div>
+              {syncProgress && <p className="text-xs text-blue-400 text-right">{syncProgress}</p>}
+              {!syncProgress && syncMsg && <p className="text-xs text-gray-500 dark:text-gray-400 text-right">{syncMsg}</p>}
             </>
           )}
         </div>
