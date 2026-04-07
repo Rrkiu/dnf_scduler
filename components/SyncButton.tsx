@@ -5,13 +5,25 @@ import { Adventure } from '@/types';
 
 interface SyncButtonProps {
   adventures: Adventure[];
+  lastSyncAt: string | null;
 }
 
-export default function SyncButton({ adventures }: SyncButtonProps) {
+function formatKST(isoString: string): string {
+  const d = new Date(isoString);
+  const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mi = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${mm}/${dd} ${hh}:${mi}`;
+}
+
+export default function SyncButton({ adventures, lastSyncAt }: SyncButtonProps) {
   const [newAdventureName, setNewAdventureName] = useState('');
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [syncAllProgress, setSyncAllProgress] = useState(0);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
+  const [lastSynced, setLastSynced] = useState<string | null>(lastSyncAt);
 
   const runSync = async (adventureName: string, id: string) => {
     setSyncingId(id);
@@ -62,6 +74,7 @@ export default function SyncButton({ adventures }: SyncButtonProps) {
     }
 
     setSyncingId(null);
+    setLastSynced(new Date().toISOString());
 
     if (failNames.length === 0) {
       setMessage({ text: `전체 ${successCount}개 모험단 갱신 완료`, ok: true });
@@ -90,13 +103,20 @@ export default function SyncButton({ adventures }: SyncButtonProps) {
         <div>
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-gray-600 dark:text-gray-400">등록된 모험단</p>
-            <button
-              onClick={handleSyncAll}
-              disabled={syncingId !== null}
-              className="text-sm bg-gray-700 hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 text-white font-medium py-1 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {syncingId === '__all__' ? `갱신 중... (${syncAllProgress}/${adventures.length})` : '전체 갱신'}
-            </button>
+            <div className="flex items-center gap-3">
+              {lastSynced && (
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  마지막 갱신: {formatKST(lastSynced)}
+                </span>
+              )}
+              <button
+                onClick={handleSyncAll}
+                disabled={syncingId !== null}
+                className="text-sm bg-gray-700 hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 text-white font-medium py-1 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {syncingId === '__all__' ? `갱신 중... (${syncAllProgress}/${adventures.length})` : '전체 갱신'}
+              </button>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             {adventures.map((adv) => {

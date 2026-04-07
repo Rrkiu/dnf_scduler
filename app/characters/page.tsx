@@ -8,9 +8,11 @@ import { Character } from '@/types';
 export const revalidate = 0;
 
 export default async function CharactersPage() {
-  const [{ data, error }, { data: adventureData }] = await Promise.all([
+  const [{ data, error }, { data: adventureData }, { data: latestSnapshotData }, { data: latestSyncData }] = await Promise.all([
     supabase.from('characters').select('*').order('fame', { ascending: false }),
     supabase.from('adventures').select('*').order('name', { ascending: true }),
+    supabase.from('character_snapshots').select('snapshot_at').order('snapshot_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('characters').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   if (error) {
@@ -31,13 +33,13 @@ export default async function CharactersPage() {
         <p className="text-gray-500 text-sm mb-4 dark:text-gray-400">
           Enter your adventure name (모험단) to fetch and save your character roster from Dundam.
         </p>
-        <SyncButton adventures={adventures} />
+        <SyncButton adventures={adventures} lastSyncAt={latestSyncData?.updated_at ?? null} />
       </div>
       
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Character Roster</h2>
-          <SnapshotAllButton characters={characters} />
+          <SnapshotAllButton characters={characters} lastSnapshotAt={latestSnapshotData?.snapshot_at ?? null} />
         </div>
         <CharacterTable characters={characters} adventures={adventures} />
       </div>

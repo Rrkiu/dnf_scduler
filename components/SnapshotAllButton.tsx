@@ -5,14 +5,26 @@ import { Character } from '@/types';
 
 interface Props {
   characters: Character[];
+  lastSnapshotAt: string | null;
 }
 
 type State = 'idle' | 'running' | 'done';
 
-export default function SnapshotAllButton({ characters }: Props) {
+function formatKST(isoString: string): string {
+  const d = new Date(isoString);
+  const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mi = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${mm}/${dd} ${hh}:${mi}`;
+}
+
+export default function SnapshotAllButton({ characters, lastSnapshotAt }: Props) {
   const [state, setState] = useState<State>('idle');
   const [progress, setProgress] = useState(0);
   const [failed, setFailed] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(lastSnapshotAt);
 
   const handleClick = async () => {
     if (state === 'running') return;
@@ -36,6 +48,7 @@ export default function SnapshotAllButton({ characters }: Props) {
     }
 
     setFailed(failCount);
+    setLastUpdated(new Date().toISOString());
     setState('done');
     setTimeout(() => setState('idle'), 3000);
   };
@@ -62,11 +75,18 @@ export default function SnapshotAllButton({ characters }: Props) {
   }
 
   return (
-    <button
-      onClick={handleClick}
-      className="px-3 py-1.5 text-sm font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
-    >
-      전체 스냅샷 갱신
-    </button>
+    <div className="flex items-center gap-3">
+      {lastUpdated && (
+        <span className="text-xs text-gray-400 dark:text-gray-500">
+          마지막 갱신: {formatKST(lastUpdated)}
+        </span>
+      )}
+      <button
+        onClick={handleClick}
+        className="px-3 py-1.5 text-sm font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
+      >
+        전체 스냅샷 갱신
+      </button>
+    </div>
   );
 }
