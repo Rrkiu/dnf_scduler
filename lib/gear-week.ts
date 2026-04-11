@@ -63,9 +63,9 @@ export const SEASON_START_WEEK_KEY = '2026-03-26'; // 시즌 첫 주 week_key
 
 // 헬던전 카테고리별 드랍 배수 (확장 시 content_type별로 분기)
 export const HELL_DROP_MULTIPLIERS = {
-  item:     1, // 장비
+  item: 1, // 장비
   covenant: 1, // 서약
-  crystal:  1, // 서약 결정
+  crystal: 1, // 서약 결정
 };
 
 // 완료된 주차 목록 반환 (현재 진행 중인 주차 제외, 최신순)
@@ -89,7 +89,7 @@ export function getCompletedWeekKeys(): string[] {
   return weeks.reverse(); // 최신순
 }
 
-const COVENANT_CODES = [550, 551, 552];
+const COVENANT_CODES = [550, 551, 552, 557];
 
 // 6가지 아이템 분류
 // 서약: covenant_relic / covenant_epic
