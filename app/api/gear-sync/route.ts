@@ -134,14 +134,15 @@ export async function POST(req: Request) {
 
     const weekGroups: Record<string, WeekCounts> = {};
     for (const log of allLogs ?? []) {
-      const type = getItemType(log.item_rarity, log.timeline_code, log.item_name);
+      // Supabase가 BIGINT 컬럼을 문자열로 반환할 수 있으므로 Number()로 명시 변환
+      const type = getItemType(log.item_rarity, Number(log.timeline_code), log.item_name);
       if (!type) continue;
       if (!weekGroups[log.week_key]) weekGroups[log.week_key] = emptyCounts();
       weekGroups[log.week_key][type]++;
     }
 
     for (const [wk, c] of Object.entries(weekGroups)) {
-      await supabase
+      const { error: scoreUpsertError } = await supabase
         .from('gear_weekly_scores')
         .upsert(
           {
@@ -158,6 +159,9 @@ export async function POST(req: Request) {
           },
           { onConflict: 'adventure_id, week_key' }
         );
+      if (scoreUpsertError) {
+        console.error(`[gear-sync] score upsert error (${wk}):`, scoreUpsertError.message);
+      }
     }
 
     return NextResponse.json({
