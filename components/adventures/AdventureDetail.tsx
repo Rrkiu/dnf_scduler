@@ -353,7 +353,7 @@ function HellTab({ adventureId, completedWeeks, initialHellEntries, weekScores }
                       </td>
                       <td className="px-4 py-3 text-center">
                         {relicRate !== null
-                          ? <span className={`font-semibold ${RARITY_COLOR['태초']}`}>{relicRate.toFixed(1)}%</span>
+                          ? <span className={`font-semibold ${RARITY_COLOR['태초']}`}>{relicRate.toFixed(4)}%</span>
                           : <Dash />}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -361,7 +361,7 @@ function HellTab({ adventureId, completedWeeks, initialHellEntries, weekScores }
                       </td>
                       <td className="px-4 py-3 text-center">
                         {epicRate !== null
-                          ? <span className={`font-semibold ${RARITY_COLOR['에픽']}`}>{epicRate.toFixed(1)}%</span>
+                          ? <span className={`font-semibold ${RARITY_COLOR['에픽']}`}>{epicRate.toFixed(4)}%</span>
                           : <Dash />}
                       </td>
                     </tr>
@@ -381,10 +381,10 @@ function HellTab({ adventureId, completedWeeks, initialHellEntries, weekScores }
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-right">
                 전체 집계 —{' '}
                 <span className={`font-semibold ${RARITY_COLOR['태초']}`}>태초</span>{' '}
-                {totalRelic}회{totalRelicRate !== null && ` (${totalRelicRate.toFixed(1)}%)`}
+                {totalRelic}회{totalRelicRate !== null && ` (${totalRelicRate.toFixed(4)}%)`}
                 {' · '}
                 <span className={`font-semibold ${RARITY_COLOR['에픽']}`}>에픽</span>{' '}
-                {totalEpic}회{totalEpicRate !== null && ` (${totalEpicRate.toFixed(1)}%)`}
+                {totalEpic}회{totalEpicRate !== null && ` (${totalEpicRate.toFixed(4)}%)`}
               </p>
             );
           })()}
