@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { formatWeekLabel, HELL_DROP_MULTIPLIERS } from '@/lib/gear-week';
 
 const RARITY_COLOR: Record<string, string> = {
@@ -100,7 +101,12 @@ function OathTab({ characters }: { characters: Character[] }) {
           <li key={c.id} className="py-3 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{c.character_name}</span>
+                <Link
+                  href={`/characters/${c.id}`}
+                  className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  {c.character_name}
+                </Link>
                 <RoleBadge role={c.role} />
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">{c.job} · 명성 {c.fame.toLocaleString('en-US')}</div>
@@ -137,7 +143,14 @@ function OathTab({ characters }: { characters: Character[] }) {
         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
           {characters.map(c => (
             <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 text-sm">
-              <td className="py-3 pr-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">{c.character_name}</td>
+              <td className="py-3 pr-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                <Link
+                  href={`/characters/${c.id}`}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  {c.character_name}
+                </Link>
+              </td>
               <td className="px-3 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{c.job}</td>
               <td className="px-3 py-3 whitespace-nowrap"><RoleBadge role={c.role} /></td>
               <td className="px-3 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{c.fame.toLocaleString('en-US')}</td>

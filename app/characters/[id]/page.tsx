@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
+import BackButton from '@/components/characters/BackButton';
 import CharacterDetail from '@/components/characters/CharacterDetail';
 
 export const revalidate = 0;
@@ -30,12 +30,7 @@ export default async function CharacterDetailPage({ params }: { params: Promise<
   return (
     <main className="p-4 md:p-8 max-w-3xl mx-auto min-h-screen">
       <div className="mb-4">
-        <Link
-          href="/characters"
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-        >
-          ← 캐릭터 목록
-        </Link>
+        <BackButton fallback="/characters" label="← 뒤로" />
       </div>
 
       <div className="border-b pb-3 md:pb-4 mb-6">
