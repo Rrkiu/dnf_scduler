@@ -44,6 +44,37 @@ interface OathData {
   };
 }
 
+interface AvatarEmblem {
+  slotColor: string;
+  itemName: string;
+  itemId?: string;
+}
+
+interface AvatarSlot {
+  slotId: string;
+  slotName: string;
+  itemId: string;
+  itemName: string;
+  itemRarity: string;
+  optionAbility?: string | null;  // e.g. "뇌신의 기운 스킬Lv +1" or "지능 +55"
+  clone?: { itemId: string; itemName: string } | null;
+  emblems: AvatarEmblem[];
+}
+
+interface CreatureArtifact {
+  slotColor: string;
+  itemId: string;
+  itemName: string;
+  itemRarity: string;
+}
+
+interface CreatureData {
+  itemId: string;
+  itemName: string;
+  itemRarity?: string;
+  artifact: CreatureArtifact[];
+}
+
 interface Snapshot {
   snapshot_at: string;
   equipment: EquipmentSlot[] | null;
@@ -52,6 +83,8 @@ interface Snapshot {
   relic_count: number;
   epic_count: number;
   set_names: string[];
+  avatar: AvatarSlot[] | null;
+  creature: CreatureData | null;
 }
 
 interface CharacterDetailProps {
@@ -91,7 +124,7 @@ const KEY_STATS = [
   '물리 방어', '마법 방어',
 ];
 
-type Tab = 'equipment' | 'oath' | 'status' | 'slots';
+type Tab = 'equipment' | 'oath' | 'status' | 'avatar';
 
 export default function CharacterDetail({ characterId, hasNeopleId, initialSnapshot }: CharacterDetailProps) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(initialSnapshot);
@@ -121,7 +154,7 @@ export default function CharacterDetail({ characterId, hasNeopleId, initialSnaps
     { key: 'equipment', label: '장비 세트' },
     { key: 'oath',      label: '서약' },
     { key: 'status',    label: '주요 스텟' },
-    { key: 'slots',     label: '슬롯 현황' },
+    { key: 'avatar',    label: '아바타 & 크리쳐' },
   ];
 
   return (
@@ -179,12 +212,10 @@ export default function CharacterDetail({ characterId, hasNeopleId, initialSnaps
             {activeTab === 'status' && (
               <StatusTab status={snapshot.status ?? []} />
             )}
-            {activeTab === 'slots' && (
-              <SlotsTab
-                equipment={snapshot.equipment ?? []}
-                relicCount={snapshot.relic_count}
-                epicCount={snapshot.epic_count}
-                setNames={snapshot.set_names}
+            {activeTab === 'avatar' && (
+              <AvatarCreatureTab
+                avatar={snapshot.avatar ?? []}
+                creature={snapshot.creature ?? null}
               />
             )}
           </>
@@ -379,6 +410,142 @@ function OathTab({ oath }: { oath: OathData | null }) {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AvatarCreatureTab({ avatar, creature }: { avatar: AvatarSlot[]; creature: CreatureData | null }) {
+  const EMBLEM_COLOR: Record<string, string> = {
+    '붉은빛': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    '노란빛': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+    '녹색빛': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    '푸른빛': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    '플래티넘': 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
+  };
+
+  const ARTIFACT_COLOR: Record<string, string> = {
+    'RED':    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    'BLUE':   'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    'GREEN':  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    '붉은빛': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    '푸른빛': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    '녹색빛': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+  };
+
+  const hasAvatar = avatar && avatar.length > 0;
+  const hasCreature = creature && creature.itemId;
+
+  if (!hasAvatar && !hasCreature) return <Empty />;
+
+  return (
+    <div className="space-y-6">
+      {/* ── 아바타 섹션 ── */}
+      {hasAvatar && (
+        <div>
+          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+            아바타
+          </div>
+          <div className="space-y-2">
+            {avatar.map((slot) => {
+              const isClone = !!slot.clone?.itemId;
+              const showItemName = !isClone; // 클론이면 외형 아이템명 숨김
+
+              return (
+                <div
+                  key={slot.slotId}
+                  className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3"
+                >
+                  {/* 슬롯명 + 착용 아이템 */}
+                  <div className="flex items-start justify-between gap-2 flex-wrap mb-2">
+                    <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0 w-16">
+                      {slot.slotName}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      {isClone ? (
+                        // 클론 착용 시: 클론임을 표시, 외형명은 생략
+                        <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-0.5 rounded">
+                          클론 아바타
+                        </span>
+                      ) : showItemName && slot.itemName ? (
+                        <span className={`text-sm font-medium truncate ${ITEM_NAME_COLOR[slot.itemRarity] ?? 'text-gray-800 dark:text-gray-200'}`}>
+                          {slot.itemName}
+                        </span>
+                      ) : null}
+                    </div>
+                    {slot.itemRarity && (
+                      <span className={`shrink-0 px-1.5 py-0.5 rounded text-xs font-bold ${ITEM_NAME_COLOR[slot.itemRarity] ?? 'text-gray-400'}`}>
+                        {slot.itemRarity}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 아바타 옵션 (스킬Lv 포함 여부로 아이콘 분기) */}
+                  {slot.optionAbility && (
+                    <div className={`text-xs mb-2 ${
+                      slot.optionAbility.includes('스킬Lv')
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-blue-600 dark:text-blue-400'
+                    }`}>
+                      {slot.optionAbility.includes('스킬Lv') ? '🎯' : '⚡'} {slot.optionAbility}
+                    </div>
+                  )}
+                  {/* 엠블렘 */}
+                  {slot.emblems && slot.emblems.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {slot.emblems.map((em, i) => (
+                        <span
+                          key={i}
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${EMBLEM_COLOR[em.slotColor] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}
+                        >
+                          {em.itemName || em.slotColor}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── 크리쳐 섹션 ── */}
+      {hasCreature && (
+        <div>
+          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+            크리쳐
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <span className={`text-sm font-semibold ${ITEM_NAME_COLOR[creature!.itemRarity ?? ''] ?? 'text-gray-900 dark:text-gray-100'}`}>
+                {creature!.itemName}
+              </span>
+              {creature!.itemRarity && (
+                <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${ITEM_NAME_COLOR[creature!.itemRarity] ?? 'text-gray-400'}`}>
+                  {creature!.itemRarity}
+                </span>
+              )}
+            </div>
+
+            {/* 아티팩트 */}
+            {creature!.artifact && creature!.artifact.length > 0 && (
+              <div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 mb-1.5">아티팩트</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {creature!.artifact.map((art, i) => (
+                    <span
+                      key={i}
+                      className={`text-xs px-2 py-0.5 rounded font-medium ${ARTIFACT_COLOR[art.slotColor] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}
+                    >
+                      {art.itemName || art.slotColor}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

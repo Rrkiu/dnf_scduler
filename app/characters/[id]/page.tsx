@@ -18,7 +18,7 @@ export default async function CharacterDetailPage({ params }: { params: Promise<
 
   const { data: snapshotData } = await supabase
     .from('character_snapshots')
-    .select('snapshot_at, equipment, oath, status, relic_count, epic_count, set_names')
+    .select('snapshot_at, equipment, oath, status, relic_count, epic_count, set_names, avatar, creature')
     .eq('character_id', id)
     .order('snapshot_at', { ascending: false })
     .limit(1)

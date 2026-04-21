@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { fetchCharacterEquipment, fetchCharacterOath, fetchCharacterStatus } from '@/lib/neople-character';
+import { fetchCharacterEquipment, fetchCharacterOath, fetchCharacterStatus, fetchCharacterAvatar, fetchCharacterCreature } from '@/lib/neople-character';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 10;
@@ -28,10 +28,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Neople ID 미등록 캐릭터' }, { status: 400 });
     }
 
-    const [equipment, oath, status] = await Promise.all([
+    const [equipment, oath, status, avatar, creature] = await Promise.all([
       fetchCharacterEquipment(character.neople_server_id, character.neople_character_id, apiKey),
       fetchCharacterOath(character.neople_server_id, character.neople_character_id, apiKey),
       fetchCharacterStatus(character.neople_server_id, character.neople_character_id, apiKey),
+      fetchCharacterAvatar(character.neople_server_id, character.neople_character_id, apiKey),
+      fetchCharacterCreature(character.neople_server_id, character.neople_character_id, apiKey),
     ]);
 
     const relicItems = equipment.filter(e => e.itemRarity === '태초');
@@ -50,6 +52,8 @@ export async function POST(req: Request) {
         relic_count: relicItems.length,
         epic_count:  epicItems.length,
         set_names:   setNames,
+        avatar,
+        creature,
         snapshot_at: new Date().toISOString(),
       })
       .select()

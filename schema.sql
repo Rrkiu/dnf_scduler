@@ -66,5 +66,12 @@ CREATE TABLE character_snapshots (
   status JSONB,
   relic_count INTEGER DEFAULT 0,
   epic_count INTEGER DEFAULT 0,
-  set_names TEXT[] DEFAULT '{}'
+  set_names TEXT[] DEFAULT '{}',
+  avatar JSONB,     -- array of AvatarSlot objects from /equip/avatar
+  creature JSONB    -- creature + artifact from /equip/creature
 );
+
+-- Migration: add avatar/creature columns to existing table if they don't exist
+-- Run this if table already exists:
+-- ALTER TABLE character_snapshots ADD COLUMN IF NOT EXISTS avatar JSONB;
+-- ALTER TABLE character_snapshots ADD COLUMN IF NOT EXISTS creature JSONB;
