@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Character, Adventure } from '@/types';
 import PartyRow from './PartyRow';
@@ -16,6 +16,7 @@ interface ScheduleBoardProps {
   scheduleId: string;
   initialSlots: SlotData[];
   initialColumnOwners: (string | null)[];
+  initialFameThreshold: number;
   allCharacters: Character[];
   allAdventures: Adventure[];
 }
@@ -24,25 +25,40 @@ const PARTY_SIZE = 4;
 
 function getInitialPartyBases(slots: SlotData[]): number[] {
   if (slots.length === 0) return [0];
-  const maxPos = Math.max(...slots.map((s) => s.position));
-  const count = Math.floor(maxPos / PARTY_SIZE) + 1;
-  return Array.from({ length: count }, (_, i) => i * PARTY_SIZE);
+  const bases = new Set(slots.map((s) => Math.floor(s.position / PARTY_SIZE) * PARTY_SIZE));
+  return Array.from(bases).sort((a, b) => a - b);
 }
 
 export default function ScheduleBoard({
   scheduleId,
   initialSlots,
   initialColumnOwners,
+  initialFameThreshold,
   allCharacters,
   allAdventures,
 }: ScheduleBoardProps) {
   const [partyBases, setPartyBases] = useState<number[]>(() => getInitialPartyBases(initialSlots));
-  const [nextBase, setNextBase] = useState<number>(() => getInitialPartyBases(initialSlots).length * PARTY_SIZE);
+  const [nextBase, setNextBase] = useState<number>(() => {
+    const bases = getInitialPartyBases(initialSlots);
+    return bases.length === 0 ? PARTY_SIZE : Math.max(...bases) + PARTY_SIZE;
+  });
   const [slots, setSlots] = useState<SlotData[]>(initialSlots);
   const [columnOwners, setColumnOwners] = useState<(string | null)[]>(initialColumnOwners);
   const [loadingPosition, setLoadingPosition] = useState<number | null>(null);
   const [isSavingOwners, setIsSavingOwners] = useState(false);
-  const [fameThreshold, setFameThreshold] = useState<number | ''>('');
+  const [fameThreshold, setFameThreshold] = useState<number | ''>(initialFameThreshold || '');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      await supabase
+        .from('schedules')
+        .update({ fame_threshold: fameThreshold === '' ? 0 : fameThreshold })
+        .eq('id', scheduleId);
+    }, 600);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [fameThreshold, scheduleId]);
 
   const handleAssign = useCallback(
     async (position: number, characterId: string | null) => {

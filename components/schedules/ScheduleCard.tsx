@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 
 interface ScheduleCardProps {
   id: string;
@@ -43,13 +42,16 @@ export default function ScheduleCard({ id, name, createdAt }: ScheduleCardProps)
     if (!confirm(`"${currentName}" 스케줄을 삭제할까요?`)) return;
 
     setIsDeleting(true);
-    const { error } = await supabase.from('schedules').delete().eq('id', id);
-
-    if (error) {
-      alert(`삭제 실패: ${error.message}`);
-      setIsDeleting(false);
-    } else {
+    try {
+      const res = await fetch(`/api/schedules/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || '삭제 실패');
+      }
       setDeleted(true);
+    } catch (err: any) {
+      alert(`삭제 실패: ${err.message}`);
+      setIsDeleting(false);
     }
   };
 

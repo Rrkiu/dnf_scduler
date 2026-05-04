@@ -42,6 +42,7 @@ export default async function ScheduleDetailPage({ params }: { params: Promise<{
         scheduleId={schedule.id}
         initialSlots={initialSlots}
         initialColumnOwners={initialColumnOwners}
+        initialFameThreshold={schedule.fame_threshold ?? 0}
         allCharacters={allCharacters}
         allAdventures={allAdventures}
       />
