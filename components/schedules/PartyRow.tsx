@@ -20,6 +20,7 @@ interface PartyRowProps {
   onAssign: (position: number, characterId: string | null) => void;
   onRemove: () => void;
   loadingPosition: number | null;
+  fameThreshold: number;
 }
 
 export default function PartyRow({
@@ -31,6 +32,7 @@ export default function PartyRow({
   onAssign,
   onRemove,
   loadingPosition,
+  fameThreshold,
 }: PartyRowProps) {
   const [selected, setSelected] = useState(false);
 
@@ -66,6 +68,7 @@ export default function PartyRow({
             assignedCharacterIds={assignedCharacterIds}
             onAssign={onAssign}
             isLoading={loadingPosition === slot.position}
+            fameThreshold={fameThreshold}
           />
         ))}
       </div>

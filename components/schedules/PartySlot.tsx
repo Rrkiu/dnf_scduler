@@ -17,6 +17,7 @@ interface PartySlotProps {
   assignedCharacterIds: Set<string>;
   onAssign: (position: number, characterId: string | null) => void;
   isLoading: boolean;
+  fameThreshold: number;
 }
 
 export default function PartySlot({
@@ -27,6 +28,7 @@ export default function PartySlot({
   assignedCharacterIds,
   onAssign,
   isLoading,
+  fameThreshold,
 }: PartySlotProps) {
   const { position, character_id, characters: assignedChar } = slotData;
   const color = COLUMN_COLORS[colIndex];
@@ -35,7 +37,8 @@ export default function PartySlot({
     ? allCharacters.filter(
         (c) =>
           c.adventure_id === adventureId &&
-          (!assignedCharacterIds.has(c.id) || c.id === character_id)
+          (!assignedCharacterIds.has(c.id) || c.id === character_id) &&
+          c.fame >= fameThreshold
       )
     : [];
 

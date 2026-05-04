@@ -42,6 +42,7 @@ export default function ScheduleBoard({
   const [columnOwners, setColumnOwners] = useState<(string | null)[]>(initialColumnOwners);
   const [loadingPosition, setLoadingPosition] = useState<number | null>(null);
   const [isSavingOwners, setIsSavingOwners] = useState(false);
+  const [fameThreshold, setFameThreshold] = useState<number | ''>('');
 
   const handleAssign = useCallback(
     async (position: number, characterId: string | null) => {
@@ -137,7 +138,20 @@ export default function ScheduleBoard({
 
   return (
     <div className="mt-6 flex flex-col gap-4">
-      <h2 className="text-xl font-semibold text-blue-800 dark:text-blue-300 border-b border-gray-200 dark:border-gray-700 pb-2">Raid Party Configuration</h2>
+      <div className="flex items-center gap-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+        <h2 className="text-xl font-semibold text-blue-800 dark:text-blue-300">Raid Party Configuration</h2>
+        <div className="ml-auto flex items-center gap-2">
+          <label className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">명성 ≥</label>
+          <input
+            type="number"
+            min={0}
+            value={fameThreshold}
+            onChange={e => setFameThreshold(e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="제한 없음"
+            className="w-32 px-2 py-1 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+      </div>
 
       <ColumnOwnerHeader
         columnOwners={columnOwners}
@@ -169,6 +183,7 @@ export default function ScheduleBoard({
             onAssign={handleAssign}
             onRemove={() => removeParty(base)}
             loadingPosition={loadingPosition}
+            fameThreshold={fameThreshold === '' ? 0 : fameThreshold}
           />
         );
       })}
