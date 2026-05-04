@@ -15,6 +15,11 @@ export default function CharacterTable({ characters: initialCharacters, adventur
   const [characters, setCharacters] = useState(initialCharacters);
   const [selectedAdventureId, setSelectedAdventureId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'dealer' | 'buffer'>('all');
+
+  const cycleRoleFilter = () => {
+    setRoleFilter(prev => prev === 'all' ? 'dealer' : prev === 'dealer' ? 'buffer' : 'all');
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this character?')) return;
@@ -32,7 +37,8 @@ export default function CharacterTable({ characters: initialCharacters, adventur
 
   const filtered = characters
     .filter(c => !selectedAdventureId || c.adventure_id === selectedAdventureId)
-    .filter(c => !search || c.character_name.toLowerCase().includes(search.toLowerCase()));
+    .filter(c => !search || c.character_name.toLowerCase().includes(search.toLowerCase()))
+    .filter(c => roleFilter === 'all' || c.role === roleFilter);
 
   if (!characters.length) {
     return <p className="text-gray-500 dark:text-gray-400 py-4">No characters found. Sync to fetch data.</p>;
@@ -82,7 +88,14 @@ export default function CharacterTable({ characters: initialCharacters, adventur
               <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Name</th>
               <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Server</th>
               <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Job</th>
-              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Role</th>
+              <th
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400"
+                onClick={cycleRoleFilter}
+              >
+                Role
+                {roleFilter === 'dealer' && <span className="ml-1.5 text-xs font-bold text-red-500">D</span>}
+                {roleFilter === 'buffer' && <span className="ml-1.5 text-xs font-bold text-blue-500">B</span>}
+              </th>
               <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Fame</th>
               <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Damage</th>
               <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Buff Power</th>
