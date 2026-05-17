@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Character, Adventure } from '@/types';
 import { supabase } from '@/lib/supabase';
+import { formatDamage } from '@/lib/dundam-parser';
 
 interface CharacterTableProps {
   characters: Character[];
@@ -123,7 +124,7 @@ export default function CharacterTable({ characters: initialCharacters, adventur
                   </span>
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{char.fame.toLocaleString()}</td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{char.damage ? char.damage.toFixed(2) : '-'}</td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{formatDamage(char.damage)}</td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{char.buff_power > 0 ? char.buff_power.toLocaleString() : '-'}</td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-right font-medium text-red-600 hover:text-red-400 dark:text-red-500 dark:hover:text-red-400 cursor-pointer" onClick={() => handleDelete(char.id)}>
                   Delete

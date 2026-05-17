@@ -13,11 +13,21 @@ export type ParsedCharacter = {
 };
 
 // Normalize damage based on GAS script logic
+// Return value is in 억 units as a float (e.g. 123.4567 = 123억 4567만, 10234.56 = 1조 234억)
 function normalizeDamage(raw: string | number | null | undefined): number {
   if (raw == null) return 0;
   const t = raw.toString().replace(/\s+/g, '').replace(/,/g, '');
 
-  // Regex patterns from GAS script
+  // 조 포함 패턴: "1조", "1조2345억", "1조2345억6789만"
+  const joMatch = t.match(/^(\d+)조(?:(\d+)억)?(?:(\d+)만)?$/);
+  if (joMatch) {
+    const jo  = parseInt(joMatch[1] || '0', 10);
+    const eok = parseInt(joMatch[2] || '0', 10);
+    const man = parseInt(joMatch[3] || '0', 10);
+    return jo * 10000 + eok + man / 10000;
+  }
+
+  // 억/만 패턴: "123억", "123억4567만"
   const eokManMatch = t.match(/^(\d+)억(?:(\d+)만)?$/);
   if (eokManMatch) {
     const eok = parseInt(eokManMatch[1], 10) || 0;
@@ -25,18 +35,47 @@ function normalizeDamage(raw: string | number | null | undefined): number {
     return eok + man / 10000;
   }
 
+  // 만 단위 단독: "5000만"
   const manMatch = t.match(/^(\d+)만$/);
   if (manMatch) {
     const man = parseInt(manMatch[1], 10) || 0;
     return man / 10000;
   }
 
+  // 순수 숫자 fallback
   if (/^\d+(\.\d+)?$/.test(t)) {
     if (t.includes('.')) return Number(t);
     return Number(t) / 10000;
   }
 
   return 0;
+}
+
+/**
+ * 억 단위 float을 사람이 읽기 좋은 한국 단위 문자열로 변환합니다.
+ * 예) 123.4567  → "123억 4567만"
+ *     10234.56  → "1조 234억"
+ *     0.5       → "5000만"
+ */
+export function formatDamage(value: number | null | undefined): string {
+  if (!value || value <= 0) return '-';
+
+  // value는 억 단위 float
+  const jo  = Math.floor(value / 10000);
+  const eok = Math.floor(value % 10000);
+  const man = Math.round((value % 1) * 10000);
+
+  if (jo > 0) {
+    // 조 단위: 만 단위는 생략해서 깔끔하게
+    return eok > 0 ? `${jo}조 ${eok}억` : `${jo}조`;
+  }
+  if (eok > 0) {
+    return man > 0 ? `${eok}억 ${man}만` : `${eok}억`;
+  }
+  if (man > 0) {
+    return `${man}만`;
+  }
+  return '-';
 }
 
 export async function fetchDundamSearch(name: string): Promise<ParsedCharacter[]> {
